@@ -1,6 +1,7 @@
 class Position < ApplicationRecord
   belongs_to :game
-  validate :well_formed_fen, :correct_board_size
+  validate :well_formed_fen
+  # validate :correct_board_size
   LETTERS = 'abcdefgh'
 
   # Retrieval of data from FEN begins here"
