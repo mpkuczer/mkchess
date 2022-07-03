@@ -1,19 +1,13 @@
 # README
+ 
+* Ruby version: 3.03
+    
+* System dependencies: 
+- Postgres 12.11
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
+* Configuration:
+- `bundle install` to install gems
+- `rake db:setup` to create, migrate and seed the database. 
 
 * How to run the test suite
 
