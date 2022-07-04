@@ -61,8 +61,8 @@
             &.knight-black {
                 background-image: url('figures/NB.svg');
             }
-            &.pawn-white {
-                background-image: url('figures/PW.svg');
+            &.pawn-black {
+                background-image: url('figures/PB.svg');
             }
             &:last-of-type {
                 counter-increment: div;

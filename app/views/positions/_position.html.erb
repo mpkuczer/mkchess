@@ -1,4 +1,6 @@
+<%= content_tag :div, id: 'position_data', data: {position: position.board} do %>
+<% end %>
 <div class="board-wrapper">
     <%= render "board" %>
 </div>
-<%= @positions.inspect %>
+<%= javascript_include_tag 'populate_board' %>
