@@ -1,4 +1,5 @@
 class GamesController < ApplicationController
+  before_action: :authenticate_user!, except: [:index, :show, :guest_new]
   def show
   end
 
