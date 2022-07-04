@@ -14,4 +14,6 @@ module Fen
     \s(\d+)                                       # halfmove number
     \s(\d+)$                                      # fullmove number
   }x
+
+  STARTING_POSITION = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 end

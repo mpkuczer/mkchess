@@ -2,6 +2,8 @@ class Position < ApplicationRecord
   belongs_to :game
   validate :well_formed_fen
   validate :correct_board_size
+  # before_validation :set_starting_position
+
   LETTERS = 'abcdefgh'
 
   # Retrieval of data from FEN begins here"
@@ -415,11 +417,12 @@ class Position < ApplicationRecord
     state = get_state_from_fen[1..8]
     8.times do |i|
       row = state[i].split("")
-      total_occupied_spaces = row.filter { |x| x.match? /^\d/ } .length
+      total_occupied_spaces = row.filter { |x| x.match? /\D/ } .length
       total_empty_spaces = 0
       row.filter { |x| x.match? /\d/ } .each do |x|
         total_empty_spaces += x.to_i
       end
+      byebug
       unless total_occupied_spaces + total_empty_spaces == 8
         errors.add("Incorrect board size.")
       end
@@ -431,5 +434,11 @@ class Position < ApplicationRecord
 
   def inactive_color_cannot_be_in_check
   end
+
+  # Callbacks
+
+  # def set_starting_position
+  #   self.fen ||= Fen::STARTING_POSITION
+  # end
 
 end
