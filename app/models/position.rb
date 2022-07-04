@@ -2,7 +2,7 @@ class Position < ApplicationRecord
   belongs_to :game
   validate :well_formed_fen
   validate :correct_board_size
-  # before_validation :set_starting_position
+  before_validation :set_starting_position
 
   LETTERS = 'abcdefgh'
 
@@ -422,7 +422,6 @@ class Position < ApplicationRecord
       row.filter { |x| x.match? /\d/ } .each do |x|
         total_empty_spaces += x.to_i
       end
-      byebug
       unless total_occupied_spaces + total_empty_spaces == 8
         errors.add("Incorrect board size.")
       end
@@ -437,8 +436,8 @@ class Position < ApplicationRecord
 
   # Callbacks
 
-  # def set_starting_position
-  #   self.fen ||= Fen::STARTING_POSITION
-  # end
+  def set_starting_position
+    self.fen ||= Fen::STARTING_POSITION
+  end
 
 end

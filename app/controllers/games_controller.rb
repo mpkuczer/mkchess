@@ -14,7 +14,7 @@ class GamesController < ApplicationController
                      white_type: colors[0].class.name,
                      black_type: colors[1].class.name,
                      status: 0)
-    @game.positions.build(Position.starting)
+    @game.positions.build.save
     if @game.save 
       redirect_to game_path(@game)
     else
