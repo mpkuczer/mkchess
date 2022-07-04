@@ -4,5 +4,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  has_many :games, -> (user) { unscope(:where).where("white_id = :id OR black_id = :id", id: user.id) }
+  has_many :games, -> (user) { unscope(:where).where("(white_id = :id AND white_type = :type) OR (black_id = :id AND black_type = :type))",
+                                                       id: user.id, type: "User") }
+  has_many :challenges, as: :challengeable
 end
