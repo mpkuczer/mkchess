@@ -5,13 +5,13 @@ Rails.application.routes.draw do
     collection do
       get 'guest'
     end
+  end
   resources :positions, only: [:show, :new, :create, :edit, :update]
-  resources :challenges, only: [:index, :show, :new, :create, :edit, :update]
+  resources :challenges, only: [:index, :show, :new, :create, :edit, :update] do
     member do
       get 'respond'
     end
-  get '/games/guest', to: 'games#guest'
-  get '/challenges/:id/respond', to: 'challenges#respond'
+  end
   # Defines the root path route ("/")
   root to: 'pages#home'
 end
