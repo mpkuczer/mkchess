@@ -2,7 +2,6 @@ class Position < ApplicationRecord
   belongs_to :game
   validate :well_formed_fen
   validate :correct_board_size
-  before_validation :set_starting_position
 
   LETTERS = 'abcdefgh'
 
@@ -435,9 +434,4 @@ class Position < ApplicationRecord
   end
 
   # Callbacks
-
-  def set_starting_position
-    self.fen ||= Fen::STARTING_POSITION
-  end
-
 end
