@@ -410,6 +410,7 @@ class Position < ApplicationRecord
     # # #
 
   def set_board(i1, j1, i2, j2)
+    
     if validate_move(i1, j1, i2, j2)
       if castling_move(i1, i2, j1, j2)
       elsif en_passant_move(i1, i2, j1, j2)
@@ -425,6 +426,8 @@ class Position < ApplicationRecord
   end
 
   def to_fen(i1, j1, i2, j2)
+    # Return the fen of position that ensues after a legal move [i1, j1] -> [i2, j2]
+
     rows = ""
     set_board(i1, j1, i2, j2).each do |row|
       row_long = row.map { |x| x.nil? ? '_' : x } .join
@@ -440,6 +443,7 @@ class Position < ApplicationRecord
 
     fen = "#{rows_fragment} #{color_fragment} #{castling_fragment} #{en_passant_fragment} #{half_moves_fragment} #{full_moves_fragment}"
   end
+
   private
 
 # Validations

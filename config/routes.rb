@@ -4,13 +4,13 @@ Rails.application.routes.draw do
   resources :games, only: [:show, :new, :create, :edit, :update] do
     resources :positions, only: [:show, :new, :create, :edit, :update]
   end
-
   resources :challenges, only: [:index, :show, :new, :create, :edit, :update] do
     member do
       get 'respond'
     end
   end
+
   get 'pass_and_play', to: 'games#pass_and_play', as: :pass_and_play
-  # Defines the root path route ("/")
+  patch 'move', to: 'games#move'
   root to: 'pages#home'
 end

@@ -12,8 +12,7 @@ class GamesController < ApplicationController
 
   def create
     @game = Game.new(game_params)
-    @position = @game.positions.build(fen: Fen::STARTING_POSITION,
-                                      order: 1)
+    @position = @game.positions.build(fen: Fen::STARTING_POSITION, order: 1)
     if @game.save
       redirect_to game_path(@game), notice: "Game created successfully."
     else
@@ -21,15 +20,12 @@ class GamesController < ApplicationController
     end
   end
 
-  def move(i1, j1, i2, j2)
-    @game = Game.find(params[:id])
-    @position = @game.positions.last 
-    # Return a position object after making a move
-    if @position.validate_move(i1, j1, i2, j2)
-      next_board = @position.board
-      next_board[i2-1][j2-1] = @position.get_square(i1, j1)
-      next_fen = next_board.to_fen
-      @game.positions.build(fen: next_fen, order: @game.positions.count + 1)
+  def move
+    if @position.validate_move(params[:i1], params[:j1], params[:i2], params[:j2])
+      fen = @position.to_fen(params[:i1], params[:j1], params[:i2], params[:j2])
+      @game.positions.build(fen: fen, order: @position.order + 1).save
+    else
+      flash.now[:notice] = "Invalid move"
     end
   end
 
