@@ -1,5 +1,5 @@
 window.populateBoard = () => {
-    classes = {
+    const classes = {
         'k': 'king-black',
         'q': 'queen-black',
         'r': 'rook-black',
@@ -15,9 +15,9 @@ window.populateBoard = () => {
         null: 'blank'
     }
 
-    board = document.querySelector('.board')
-    positionData = document.querySelector('#position_data').getAttribute('data-position')
-    position = JSON.parse(positionData)
+    const board = document.querySelector('.board')
+    const positionData = document.querySelector('#position_data').getAttribute('data-position')
+    const position = JSON.parse(positionData)
 
     Array.from(board.children).forEach((row, i) => {
         Array.from(row.children).forEach((square, j) => {

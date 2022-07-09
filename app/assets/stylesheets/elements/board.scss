@@ -22,12 +22,45 @@
     counter-reset: div;
     .rank {
         display: flex;
+        &:last-of-type {
+            counter-reset: div;
+            .tile {
+                counter-increment: div;
+                &::before {
+                    content: counter(div, lower-alpha);
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                    position: absolute;
+                    bottom: 0px;
+                    left: 5px;
+                }
+                &:nth-of-type(even) {
+                    color: var(--dark-color);
+                }
+                &:nth-of-type(odd) {
+                    color: var(--light-color);
+                }
+            }
+            
+        }
+        &:nth-of-type(even) {
+            color: var(--dark-color);
+        }
+        &:nth-of-type(odd) {
+            color: var(--light-color);
+        }
         .tile {
             flex: 1;
             aspect-ratio: 1 / 1;
             min-width: 20px;
             background-size: cover;
             position: relative;
+            &#tile_selected {
+                background-color: var(--select-color) !important;
+            }
+            &.tile_successful_move {
+                background-color: var(--success-color) !important;
+            }
             &.king-white {
                 background-image: url('figures/KW.svg');
             }
@@ -76,33 +109,6 @@
                 }
 
             }
-        }
-        &:last-of-type {
-            counter-reset: div;
-            .tile {
-                counter-increment: div;
-                &::before {
-                    content: counter(div, lower-alpha);
-                    font-size: 0.8rem;
-                    font-weight: bold;
-                    position: absolute;
-                    bottom: 0px;
-                    left: 5px;
-                }
-                &:nth-of-type(even) {
-                    color: var(--dark-color);
-                }
-                &:nth-of-type(odd) {
-                    color: var(--light-color);
-                }
-            }
-            
-        }
-        &:nth-of-type(even) {
-            color: var(--dark-color);
-        }
-        &:nth-of-type(odd) {
-            color: var(--light-color);
         }
     }
   }

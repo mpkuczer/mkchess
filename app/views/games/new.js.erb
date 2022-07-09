@@ -1,3 +1,3 @@
-document.querySelector('.board-wrapper').outerHTML = "<%= j render(partial: 'positions/position', locals: { position: position }) %>";
+document.querySelector('.board-wrapper').outerHTML = "<%= j render(partial: 'positions/position', locals: { position: position, move: move }) %>";
 populateBoard();
 boardInputs();

@@ -34,15 +34,19 @@ class GamesController < ApplicationController
                              params[:j2].to_i)
       if @game.positions.build(fen: fen, order: @position.order + 1).save
         @new_position = @game.positions.last
+        @move = [params[:i1].to_i,
+                 params[:j1].to_i,
+                 params[:i2].to_i,
+                 params[:j2].to_i]
         respond_to do |format|
-          format.js { render 'games/new', layout: false, locals: {position: @new_position} }
+          format.js { render 'games/new', layout: false, locals: { position: @new_position, move: @move } }
         end
       else
-        render json: { error: "error" }
+        render json: { error: fen }
       end
       
     else
-      render json: { error: "error" }
+      render json: { error: "Invalid move" }
     end
   end
 

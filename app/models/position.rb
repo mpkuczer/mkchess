@@ -66,6 +66,10 @@ class Position < ApplicationRecord
     i.between?(1, 8) && j.between?(1,8)
   end
 
+  def out_of_bounds(i, j)
+    !in_bounds(i, j)
+  end
+
   def get_square(i, j)
     # If the square is occupied, return the occupying piece, else nil. If out of bounds, return false.
     if in_bounds(i, j)
@@ -75,8 +79,6 @@ class Position < ApplicationRecord
     end
   end
 
-
-
   def available(i, j)
     get_square(i, j).nil?
   end
@@ -85,7 +87,7 @@ class Position < ApplicationRecord
     if in_bounds(i, j)
       !available(i, j)
     else
-      false
+      nil
     end
   end
 
@@ -264,108 +266,109 @@ class Position < ApplicationRecord
       squares.push([i-1, j-1]) if occupied(i-1, j-1) && color(i-1, j-1) != color(i, j)
     when 'Q'
       i_ = i; j_ = j
-      until occupied(i_-1, j_)
+      until occupied(i_-1, j_) || out_of_bounds(i_-1, j_)
         i_ -= 1 
       end
-      squares.push([i_-1, j_]) if color(i_-1, j_) != color(i, j)
+      squares.push([i_-1, j_]) if color(i_-1, j_) && color(i_-1, j_) != color(i, j)  
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_+1)
+      until occupied(i_-1, j_+1) || out_of_bounds(i_-1, j_+1)
         i_ -= 1
         j_ += 1
       end
-      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) != color(i, j)
+      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) && color(i_-1, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_, j_+1)
+      until occupied(i_, j_+1) || out_of_bounds(i_, j_+1)
         j_ += 1 
       end
-      squares.push([i_, j_+1]) if color(i_, j_+1) != color(i, j)
+      squares.push([i_, j_+1]) if color(i_, j_+1) && color(i_, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_+1)
+      until occupied(i_+1, j_+1) || out_of_bounds(i_+1, j_+1)
         i_ += 1 
         j_ += 1
       end
-      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) != color(i, j)
+      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) && color(i_+1, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_)
+      until occupied(i_+1, j_) || out_of_bounds(i_+1, j_)
         i_ += 1 
       end
-      squares.push([i_+1, j_]) if color(i_+1, j_) != color(i, j)
+      squares.push([i_+1, j_]) if color(i_+1, j_) && color(i_+1, j_) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_-1)
+      until occupied(i_+1, j_-1) || out_of_bounds(i_+1, j_-1)
         i_ += 1
         j_ -= 1
       end
-      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) != color(i, j)
+      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) && color(i_+1, j_-1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_, j_-1)
+      until occupied(i_, j_-1) || out_of_bounds(i_, j_-1)
         j_ -= 1 
       end
-      squares.push([i_, j_-1]) if color(i_, j_-1) != color(i, j)
+      squares.push([i_, j_-1]) if color(i_, j_-1) && color(i_, j_-1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_-1)
+      until occupied(i_-1, j_-1) || out_of_bounds(i_-1, j_-1)
         i_ -= 1 
         j_ -= 1
       end
-      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) != color(i, j)
+      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) && color(i_-1, j_-1) != color(i, j)
+
     when 'R'
       i_ = i; j_ = j
-      until occupied(i_-1, j_)
+      until occupied(i_-1, j_) || out_of_bounds(i_-1, j_)
         i_ -= 1 
       end
-      squares.push([i_-1, j_]) if color(i_-1, j_) != color(i, j)  
+      squares.push([i_-1, j_]) if color(i_-1, j_) && color(i_-1, j_) != color(i, j)  
 
       i_ = i; j_ = j
-      until occupied(i_, j_+1)
+      until occupied(i_, j_+1) || out_of_bounds(i_, j_+1)
         j_ += 1 
       end
-      squares.push([i_, j_+1]) if color(i_, j_+1) != color(i, j)
+      squares.push([i_, j_+1]) if color(i_, j_+1) && color(i_, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_)
+      until occupied(i_+1, j_) || out_of_bounds(i_+1, j_)
         i_ += 1 
       end
-      squares.push([i_+1, j_]) if color(i_+1, j_) != color(i, j)
+      squares.push([i_+1, j_]) if color(i_+1, j_) && color(i_+1, j_) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_, j_-1)
+      until occupied(i_, j_-1) || out_of_bounds(i_, j_-1)
         j_ -= 1 
       end
-      squares.push([i_, j_-1]) if color(i_, j_-1) != color(i, j)
+      squares.push([i_, j_-1]) if color(i_, j_-1) && color(i_, j_-1) != color(i, j)
     when 'B'
       i_ = i; j_ = j
-      until occupied(i_-1, j_+1)
+      until occupied(i_-1, j_+1) || out_of_bounds(i_-1, j_+1)
         i_ -= 1
         j_ += 1
       end
-      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) != color(i, j)
+      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) && color(i_-1, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_+1)
+      until occupied(i_+1, j_+1) || out_of_bounds(i_+1, j_+1)
         i_ += 1 
         j_ += 1
       end
-      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) != color(i, j)
+      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) && color(i_+1, j_+1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_-1)
+      until occupied(i_+1, j_-1) || out_of_bounds(i_+1, j_-1)
         i_ += 1
         j_ -= 1
       end
-      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) != color(i, j)
+      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) && color(i_+1, j_-1) != color(i, j)
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_-1)
+      until occupied(i_-1, j_-1) || out_of_bounds(i_-1, j_-1)
         i_ -= 1 
         j_ -= 1
       end
-      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) != color(i, j)
+      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) && color(i_-1, j_-1) != color(i, j)
     when 'N'
       squares.push([i-2, j+1]) if occupied(i-2, j+1) && color(i-2, j+1) != color(i, j)
       squares.push([i-1, j+2]) if occupied(i-1, j+2) && color(i-1, j+2) != color(i, j)
