@@ -13,8 +13,10 @@
        min-width: 300px;
        width: 100%;
        font-family: Segoe UI, Frutiger, Frutiger Linotype, Dejavu Sans, Helvetica Neue, Arial, sans-serif;
-       font-size: 1rem;
+       font-size: 2rem;
        min-height: 100vh;
+       color: white;
+       background-color: rgb(46, 43, 43);
        overflow-x: scroll;
        .wrapper {
          width: 90%;
@@ -24,6 +26,9 @@
          @media (max-width: 1500px) {
            width: 96%;
          }
+       }
+       a {
+        color: white;
        }
      }
    }

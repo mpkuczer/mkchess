@@ -9,7 +9,8 @@ Rails.application.routes.draw do
     end
   end
 
-  get 'pass_and_play', to: 'games#pass_and_play', as: :pass_and_play
+  # get 'pass_and_play', to: 'games#pass_and_play', as: :pass_and_play
   patch 'move', to: 'games#move'
-  root to: 'pages#home'
+  post 'skip_to_position', to: 'games#skip_to_position'
+  root to: 'games#new'
 end

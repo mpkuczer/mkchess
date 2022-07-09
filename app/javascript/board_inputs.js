@@ -21,7 +21,6 @@ window.boardInputs = () => {
                    queue[0][1] == coords[1]) {
             queue[0] = null
             queue[1] = null
-            console.log('l')
             document.getElementById("tile_selected").removeAttribute("id")
             return
         } else {

@@ -1,5 +1,6 @@
 class Position < ApplicationRecord
   belongs_to :game
+  validates :order, presence: true, uniqueness: { scope: :game_id }
   validate :well_formed_fen
   validate :correct_board_size
 
