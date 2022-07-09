@@ -1,5 +1,8 @@
+
 <%= render 'positions/position', position: @game.positions.last%>
 
 <% @game.positions.each do |position| %>
     <%= link_to "Position", position_path(position) %>
 <% end %>
+<script>populateBoard();</script>
+<script>boardInputs();</script>
