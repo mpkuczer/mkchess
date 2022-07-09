@@ -10,12 +10,13 @@ classes = {
     'R': 'rook-white',
     'B': 'bishop-white',
     'N': 'knight-white',
-    'P': 'pawn-white'
+    'P': 'pawn-white',
+    null: 'blank'
 }
 
 board = document.querySelector('.board')
-position_data = document.querySelector('#position_data').getAttribute('data-position')
-position = JSON.parse(position_data)
+positionData = document.querySelector('#position_data').getAttribute('data-position')
+position = JSON.parse(positionData)
 
 Array.from(board.children).forEach((row, i) => {
     Array.from(row.children).forEach((square, j) => {

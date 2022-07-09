@@ -93,9 +93,9 @@ class Position < ApplicationRecord
     # If the square is occupied, return the piece's color, else nil.
     case get_square(i, j)
     when /[[:upper:]]/
-      :white
+      :w
     when /[[:lower:]]/
-      :black
+      :b
     else
       nil
     end
@@ -233,12 +233,12 @@ class Position < ApplicationRecord
       end
     when 'P'
       case color(i, j)
-      when :white
+      when :w
         squares.push([i-1, j]) if available(i-1, j)
         if i == 7
           squares.push([i-2, j]) if available(i-2, j)
         end
-      when :black
+      when :b
         squares.push([i+1, j]) if available(i+1, j)
         if i == 2
           squares.push([i+2, j]) if available(i+2, j)
@@ -377,10 +377,10 @@ class Position < ApplicationRecord
       squares.push([i-2, j-1]) if occupied(i-2, j-1) && color(i-2, j-1) != color(i, j)
     when 'P'
       case color(i, j)
-      when :white
+      when :w
         squares.push([i-1, j-1]) if occupied(i-1, j-1) && color(i-1, j-1) != color(i, j)
         squares.push([i-1, j+1]) if occupied(i-1, j+1) && color(i-1, j+1) != color(i, j)
-      when :black
+      when :b
         squares.push([i+1, j-1]) if occupied(i+1, j-1) && color(i+1, j-1) != color(i, j)
         squares.push([i+1, j+1]) if occupied(i+1, j+1) && color(i+1, j+1) != color(i, j)
       end
@@ -397,7 +397,7 @@ class Position < ApplicationRecord
 
   def validate_move(i1, j1, i2, j2)
     # Checks if the move from (i1, j1) to (i2, j2) is a valid chess move.
-    legal_squares(i1, j1).include? [i2, j2]
+    (legal_squares(i1, j1).include? [i2, j2]) && (color(i1, j1) == get_active_color)
   end
 
   def castling_move(i1, j1, i2, j2)
@@ -410,7 +410,7 @@ class Position < ApplicationRecord
     # # #
 
   def set_board(i1, j1, i2, j2)
-    
+
     if validate_move(i1, j1, i2, j2)
       if castling_move(i1, i2, j1, j2)
       elsif en_passant_move(i1, i2, j1, j2)

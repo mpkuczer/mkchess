@@ -1,6 +1,7 @@
-<%= content_tag :div, id: 'position_data', data: { position: position.board } do %>
+<%= content_tag :div, id: 'position_data', data: { id: position.id, position: position.board } do %>
 <% end %>
 <div class="board-wrapper">
-    <%= render "board" %>
+    <%= render "positions/board" %>
 </div>
 <%= javascript_include_tag 'populate_board' %>
+<%= javascript_include_tag 'board_inputs' %>
