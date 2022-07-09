@@ -1,0 +1,19 @@
+
+<%= simple_form_for(@game) do |f| %>
+  <%= f.error_notification %>
+  <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+
+  <div class="form-inputs">
+  <%# Scaffold code starts %>
+    <%= f.hidden_field :white_type, value: 'User' %>
+    <%= f.hidden_field :black_type, value: 'User' %>
+  <%# Scaffold code ends %>
+    <%= f.input :white_id, label: "White player", collection: User.all %>
+    <%= f.input :black_id, label: "Black player", collection: User.all %>
+    <%= f.hidden_field :status, value: :started %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.button :submit, "Create game", class: "create_game", name: "create_game" %>
+  </div>
+<% end %>

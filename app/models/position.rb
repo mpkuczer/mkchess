@@ -11,33 +11,16 @@ class Position < ApplicationRecord
   end
 
   def get_active_color
-    color = get_state_from_fen[9].to_sym
-    color_values = {
-      w: :white,
-      b: :black
-    }
-    color_values[color]
+    get_state_from_fen[9].to_sym
   end
 
   def get_castling_rights
-    castling = get_state_from_fen[10]
-    castling_rights = {
-      white_kingside: castling.include?('K'),
-      white_queenside: castling.include?('Q'),
-      black_kingside: castling.include?('k'),
-      black_queenside: castling.include?('q')
-    }
+    get_state_from_fen[10].to_sym
   end
 
   def get_en_passant_square
     ep = get_state_from_fen[11]
-    if ep == '-'
-      en_passant = false
-    else 
-      en_passant = get_square_from_algebraic(ep)
-    end
   end
-    
   def get_half_moves
     half_moves = get_state_from_fen[12].to_i
   end
@@ -91,6 +74,8 @@ class Position < ApplicationRecord
       false
     end
   end
+
+
 
   def available(i, j)
     get_square(i, j).nil?
@@ -399,9 +384,62 @@ class Position < ApplicationRecord
         squares.push([i+1, j-1]) if occupied(i+1, j-1) && color(i+1, j-1) != color(i, j)
         squares.push([i+1, j+1]) if occupied(i+1, j+1) && color(i+1, j+1) != color(i, j)
       end
+    when nil
+      squares = []
+    end
+    squares
+  end
+
+  def legal_squares(i, j)
+    # No checks yet!!
+    available_squares(i, j) + capturable_squares(i, j)
+  end
+
+  def validate_move(i1, j1, i2, j2)
+    # Checks if the move from (i1, j1) to (i2, j2) is a valid chess move.
+    legal_squares(i1, j1).include? [i2, j2]
+  end
+
+  def castling_move(i1, j1, i2, j2)
+    # Return K Q k q nil if appropriate castling was made on the move 
+  end
+
+  def en_passant_move(i1, j1, i2, j2)
+  end
+
+    # # #
+
+  def set_board(i1, j1, i2, j2)
+    if validate_move(i1, j1, i2, j2)
+      if castling_move(i1, i2, j1, j2)
+      elsif en_passant_move(i1, i2, j1, j2)
+      else
+        next_board = board
+        next_board[i2 - 1][j2 - 1] = board[i1 - 1][j1 - 1]
+        next_board[i1 - 1][j1 - 1] = nil
+        next_board
+      end
+    else
+      board
     end
   end
 
+  def to_fen(i1, j1, i2, j2)
+    rows = ""
+    set_board(i1, j1, i2, j2).each do |row|
+      row_long = row.map { |x| x.nil? ? '_' : x } .join
+      rows << "#{row_long.gsub(/_+/) { |capture| capture.length.to_s }}/"
+    end
+
+    rows_fragment = rows.chomp("/")
+    color_fragment = get_active_color == :b ? :w : :b
+    castling_fragment = get_castling_rights.to_s.gsub(castling_move(i1, j1, i2, j2).to_s, "")
+    en_passant_fragment = "-".to_s # IN PROGRESS
+    half_moves_fragment = get_half_moves.to_s
+    full_moves_fragment = ((order + 1)/2).ceil
+
+    fen = "#{rows_fragment} #{color_fragment} #{castling_fragment} #{en_passant_fragment} #{half_moves_fragment} #{full_moves_fragment}"
+  end
   private
 
 # Validations
@@ -432,6 +470,4 @@ class Position < ApplicationRecord
 
   def inactive_color_cannot_be_in_check
   end
-
-  # Callbacks
 end

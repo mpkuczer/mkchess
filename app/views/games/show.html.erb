@@ -1,3 +1,6 @@
+<%= render 'position_frame', positions = @positions%>
+<%= render 'move_form' %>
+
 <% @positions.each do |position| %>
     <%= link_to "Position", position_path(position) %>
 <% end %>
