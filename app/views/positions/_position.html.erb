@@ -1,10 +1,25 @@
 <div class="board-wrapper">
     <%= content_tag :div, id: 'position_data', data: { id: position.id, position: position.board } do %>
     <% end %>
-    <%= button_to skip_to_position_path(position_id: position.id, format: :js), remote: true do %>
+    <%= button_to skip_to_position_path(position_id: position.id,
+                                        option: :previous,
+                                        format: :js),
+                                      { form_class: "d-flex",
+                                        class: "nav-btn previous" },
+                                        remote: true do %>
         <i class="bi bi-skip-start-fill"></i>
     <% end %>
+
     <%= render "positions/board" %>
+
+    <%= button_to skip_to_position_path(position_id: position.id,
+                                        option: :next,
+                                        format: :js),
+                                      { form_class: "d-flex",
+                                        class: "nav-btn next" },
+                                        remote: true do %>
+        <i class="bi bi-skip-end-fill"></i>
+    <% end %>
 
     <%= javascript_include_tag 'populate_board' %>
     <%= javascript_include_tag 'board_inputs' %>
