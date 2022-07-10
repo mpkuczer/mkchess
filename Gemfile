@@ -57,13 +57,14 @@ gem "devise"
 # Use simple_form for forms
 gem 'simple_form'
 
+gem 'faker'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'rspec-rails'
   gem 'rails-controller-testing'
   gem 'dotenv-rails'
-  gem 'faker'
 end
 
 group :development do
