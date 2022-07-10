@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_07_08_201128) do
+ActiveRecord::Schema[7.0].define(version: 2022_07_10_183651) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -49,6 +49,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_07_08_201128) do
     t.integer "game_id"
     t.text "fen"
     t.integer "order"
+    t.text "previous_move"
   end
 
   create_table "users", force: :cascade do |t|

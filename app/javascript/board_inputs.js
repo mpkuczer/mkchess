@@ -10,7 +10,6 @@ window.boardInputs = () => {
         let coords = getSquareCoordinates(evt.target)
         if (queue[0] === null) {
             if (evt.target.classList.contains("blank")) {
-                console.log('empty tile')
                 queue[0] = null;
                 queue[1] = null;
                 return

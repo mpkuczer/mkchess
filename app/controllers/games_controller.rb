@@ -5,20 +5,17 @@ class GamesController < ApplicationController
   def show
     @game = Game.find(params[:id])
     @positions = @game.positions
-    @move = []
   end
 
   def new
     @game = Game.new
     @position = Position.new
-    @move = []
   end
 
   def create
     @game = Game.new(game_params)
-    @move = ['x']
     if @game.save
-      @position = @game.positions.build(fen: Fen::STARTING_POSITION, order: 1).save
+      @position = @game.positions.build(fen: Fen::STARTING_POSITION, order: 1, previous_move: "").save
       redirect_to game_path(@game)
     else
       render :new, notice: "Error", status: :unprocessable_entity
@@ -33,10 +30,12 @@ class GamesController < ApplicationController
     if @position == @game.positions.order(:order).last
       if @position.validate_move(*@move)
         fen = @position.to_fen(*@move)
-        @game.positions.build(fen: fen, order: @position.order + 1).save
+        @game.positions.build(fen: fen,
+                              order: @position.order + 1,
+                              previous_move: @move.join).save
         @new_position = @game.positions.order(:order).last
         respond_to do |format|
-          format.js { render 'games/new', layout: false, locals: { position: @new_position, move: @move }, status: :ok }
+          format.js { render 'games/new', layout: false, locals: { position: @new_position }, status: :ok }
         end
       else
         render json: { error: "Invalid move", offendingPiece: @move[0..1] }, status: :unprocessable_entity

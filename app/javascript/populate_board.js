@@ -19,13 +19,14 @@ window.populateBoard = () => {
     const positionData = document.querySelector('#position_data').getAttribute('data-position');
     const position = JSON.parse(positionData);
     const moveData = document.querySelector('#position_data').getAttribute('data-move');
-    const move = JSON.parse(moveData);
+    const move = moveData.split("").map((x) => parseInt(x));
 
     Array.from(board.children).forEach((row, i) => {
         Array.from(row.children).forEach((square, j) => {
             square.classList.add(classes[position[i][j]])
         })
     })
+
     if (move.length !== 0) {
         board.children[move[0] - 1].children[move[1] - 1].classList.add("successful")
         board.children[move[2] - 1].children[move[3] - 1].classList.add("successful")
