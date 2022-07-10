@@ -34,8 +34,27 @@ class GamesController < ApplicationController
                               order: @position.order + 1,
                               previous_move: @move.join).save
         @new_position = @game.positions.order(:order).last
-        respond_to do |format|
-          format.js { render 'games/new', layout: false, locals: { position: @new_position }, status: :ok }
+
+        if @new_position.checkmate
+          @game.status = :finished
+          respond_to do |format|
+            format.js { render 'games/game_over', layout: false,
+                                                  locals: { position: @new_position,
+                                                            winner: @position.get_active_color.to_s },
+                                                  status: :ok }
+          end
+        elsif @new_position.stalemate
+          @game.status = :finished
+          respond_to do |format|
+            format.js { render 'games/game_over', layout: false,
+                                                  locals: { position: @new_position,
+                                                            winner: "draw" },
+                                                  status: :ok }
+          end
+        else
+          respond_to do |format|
+            format.js { render 'games/new', layout: false, locals: { position: @new_position }, status: :ok }
+          end
         end
       else
         render json: { error: "Invalid move", offendingPiece: @move[0..1] }, status: :unprocessable_entity

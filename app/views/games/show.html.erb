@@ -1,11 +1,15 @@
 <%= render 'positions/position', position: @game.positions.order(:order).last %>
 
 <div class='positions-footer text-center'>
+<%
+=begin %>
     <% @game.positions.each do |position| %>
         <%= link_to position_path(position) do %>
             <%= position.order %>
         <% end %>
     <% end %>
+<%
+=end %>
 </div>
 
 

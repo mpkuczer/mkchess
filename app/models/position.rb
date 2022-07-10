@@ -448,7 +448,19 @@ class Position < ApplicationRecord
 
   def legal_squares(i, j, template=state)
     # No checks yet!!
-    available_squares(i, j, template) + capturable_squares(i, j, template)
+    squares = available_squares(i, j, template) + capturable_squares(i, j, template)
+    squares.filter { |sq| inactive_color_not_in_check(set_state(i, j, *sq)) }
+  end
+
+  def active_color_in_check(template=state)
+    active = template[:get_active_color]
+    inactive = switch_color(active)
+    get_pieces_by_color(inactive).each do |piece|
+      if capturable_squares(*piece, template).include? get_king_by_color(active, template)
+        return true
+      end
+    end
+    false
   end
 
   def inactive_color_not_in_check(template=state)
@@ -466,8 +478,7 @@ class Position < ApplicationRecord
   def validate_move(i1, j1, i2, j2)
     # Checks if the move from (i1, j1) to (i2, j2) is a valid chess move.
     (legal_squares(i1, j1).include? [i2, j2]) && 
-    (color(i1, j1) == get_active_color) &&
-    inactive_color_not_in_check(set_state(i1, j1, i2, j2))
+    (color(i1, j1) == get_active_color)
   end
 
   def castling_move(i1, j1, i2, j2)
@@ -477,6 +488,15 @@ class Position < ApplicationRecord
   def en_passant_move(i1, j1, i2, j2)
   end
 
+  def checkmate(template=state)
+    active_color_in_check &&
+    get_pieces_by_color(template[:get_active_color]).all? { |piece| legal_squares(*piece, template).empty? } 
+  end
+
+  def stalemate(template=state)
+    !active_color_in_check &&
+    get_pieces_by_color(template[:get_active_color]).all? { |piece| legal_squares(*piece, template).empty? } 
+  end
     # # #
 
   def set_state(i1, j1, i2, j2)

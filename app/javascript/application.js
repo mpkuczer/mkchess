@@ -2,6 +2,7 @@
 import './add_jquery'
 import './populate_board'
 import './board_inputs'
+import './game_over'
 import "@hotwired/turbo-rails"
 import "./controllers"
 import * as bootstrap from "bootstrap"
