@@ -1,8 +1,8 @@
 window.boardInputs = () => {
-    const board = document.querySelector('.board')
-    const positionData = document.querySelector('#position_data').getAttribute('data-position')
-    const positionId = document.querySelector('#position_data').getAttribute('data-id')
-    const position = JSON.parse(positionData)
+    const board = document.querySelector('.board');
+    const positionData = document.querySelector('#position_data').getAttribute('data-position');
+    const positionId = document.querySelector('#position_data').getAttribute('data-id');
+    const position = JSON.parse(positionData);
     let queue = [null, null];
 
     const processInput = (evt) => {
@@ -40,25 +40,23 @@ window.boardInputs = () => {
                     j2: queue[1][1],
                     position_id: positionId
                 },
-            }).done((data, textStatus, jqHXR) => {
+            }).done((data, textStatus, jqXHR) => {
                 queue[0] = null;
                 queue[1] = null;
                 if (document.getElementById("selected")) {
                     document.getElementById("selected").removeAttribute("id")
                 }
-                if (data.hasOwnProperty('offendingPiece')) {
-                    let invalidCoords = data.offendingPiece
-                    console.log(data)
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                queue[0] = null;
+                queue[1] = null;
+                if (document.getElementById("selected")) {
+                    document.getElementById("selected").removeAttribute("id")
+                }
+                if (jqXHR.responseJSON.hasOwnProperty('offendingPiece')) {
+                    let invalidCoords = jqXHR.responseJSON.offendingPiece
                     let invalidTile = board.children[invalidCoords[0] - 1].children[invalidCoords[1] - 1]
                     invalidTile.setAttribute("id", "invalid")
                     setTimeout(() => { invalidTile.removeAttribute("id") }, 500)
-                }
-            }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log('error')
-                queue[0] = null;
-                queue[1] = null;
-                if (document.getElementById("selected")) {
-                    document.getElementById("selected").removeAttribute("id")
                 }
             })} 
         }

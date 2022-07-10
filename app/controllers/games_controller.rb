@@ -5,15 +5,18 @@ class GamesController < ApplicationController
   def show
     @game = Game.find(params[:id])
     @positions = @game.positions
+    @move = []
   end
 
   def new
     @game = Game.new
     @position = Position.new
+    @move = []
   end
 
   def create
     @game = Game.new(game_params)
+    @move = ['x']
     if @game.save
       @position = @game.positions.build(fen: Fen::STARTING_POSITION, order: 1).save
       redirect_to game_path(@game)
@@ -33,13 +36,13 @@ class GamesController < ApplicationController
         @game.positions.build(fen: fen, order: @position.order + 1).save
         @new_position = @game.positions.order(:order).last
         respond_to do |format|
-          format.js { render 'games/new', layout: false, locals: { position: @new_position, move: @move } }
+          format.js { render 'games/new', layout: false, locals: { position: @new_position, move: @move }, status: :ok }
         end
       else
-        render json: { error: "Invalid move", offendingPiece: @move[0..1]}
+        render json: { error: "Invalid move", offendingPiece: @move[0..1] }, status: :unprocessable_entity
       end
     else
-      render json: { error: "Past position" }
+      render json: { error: "Past position" }, status: :unprocessable_entity
     end
   end
 

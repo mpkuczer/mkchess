@@ -1,5 +1,4 @@
-
-<%= render 'positions/position', position: @game.positions.order(:order).last%>
+<%= render 'positions/position', position: @game.positions.order(:order).last, move: @move %>
 
 <div class='positions-footer text-center'>
     <% @game.positions.each do |position| %>
