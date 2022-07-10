@@ -51,18 +51,6 @@ class Position < ApplicationRecord
 
 # Spatial getters
 
-  # def get_rank(i)
-  #   board[i-1]
-  # end
-
-  # def get_file(i)
-  #   col = []
-  #   board.each do |row|
-  #     col.push(row[i-1])
-  #   end
-  #   col
-  # end
-
   def in_bounds(i, j)
     i.between?(1, 8) && j.between?(1,8)
   end
@@ -71,30 +59,30 @@ class Position < ApplicationRecord
     !in_bounds(i, j)
   end
 
-  def get_square(i, j)
+  def get_square(i, j, template=board)
     # If the square is occupied, return the occupying piece, else nil. If out of bounds, return false.
     if in_bounds(i, j)
-      board[i-1][j-1]
+      template[i-1][j-1]
     else
       false
     end
   end
 
-  def available(i, j)
-    get_square(i, j).nil?
+  def available(i, j, template=board)
+    get_square(i, j, template).nil?
   end
 
-  def occupied(i, j)
+  def occupied(i, j, template=board)
     if in_bounds(i, j)
-      !available(i, j)
+      !available(i, j, template)
     else
       nil
     end
   end
 
-  def color(i, j)
+  def color(i, j, template=board)
     # If the square is occupied, return the piece's color, else nil.
-    case get_square(i, j)
+    case get_square(i, j, template)
     when /[[:upper:]]/
       :w
     when /[[:lower:]]/
@@ -104,20 +92,54 @@ class Position < ApplicationRecord
     end
   end
 
-  # Translation of algebraic square notation into array element
-
-  def get_square_from_algebraic(square)
-    if LETTERS.include? square[0].downcase
-      row = LETTERS.index(square[0].downcase)
+  def get_pieces_by_color(color, template = board)
+    white_pieces = []
+    black_pieces = []
+    template.each_with_index do |row, i|
+      row.each_with_index do |square, j|
+        white_pieces.push([i+1, j+1]) if color(i+1, j+1) == :w
+        black_pieces.push([i+1, j+1]) if color(i+1, j+1) == :b
+      end
     end
-    if square[1].between?(1, 8)
-      col = square[1] - 1
-    end
-  
-    if row && col
-      get_square(row, col)
+    case color
+    when :w
+      white_pieces
+    when :b
+      black_pieces
     end
   end
+
+  def get_king_by_color(color)
+    white_king = nil
+    black_king = nil
+    board.each_with_index do |row, i|
+      row.each_with_index do |square, j|
+        white_king = [i+1, j+1] if get_square(i+1, j+1) == "K"
+        black_king = [i+1, j+1] if get_square(i+1, j+1) == "k"
+        break if white_king && black_king
+      end
+    end
+    case color
+    when :w
+      white_king
+    when :b
+      black_king
+    end
+  end
+  # Translation of algebraic square notation into array element
+
+  # def get_square_from_algebraic(square)
+  #   if LETTERS.include? square[0].downcase
+  #     row = LETTERS.index(square[0].downcase)
+  #   end
+  #   if square[1].between?(1, 8)
+  #     col = square[1] - 1
+  #   end
+  
+  #   if row && col
+  #     get_square(row, col)
+  #   end
+  # end
 
   ### Movement-pertaining methods begin here
 
@@ -399,9 +421,30 @@ class Position < ApplicationRecord
     available_squares(i, j) + capturable_squares(i, j)
   end
 
+  def active_color_not_in_check
+    case get_active_color
+    when :w
+      get_pieces_by_color(:w).each do |piece|
+        if capturable_squares(*piece).include? get_king_by_color(:b)
+          return false
+        end
+      end
+    when :b
+      get_pieces_by_color(:b).each do |piece|
+        if capturable_squares(*piece).include? get_king_by_color(:w)
+          errors.add("Check")
+          return false
+        end
+      end
+    end
+    true
+  end
+
   def validate_move(i1, j1, i2, j2)
     # Checks if the move from (i1, j1) to (i2, j2) is a valid chess move.
-    (legal_squares(i1, j1).include? [i2, j2]) && (color(i1, j1) == get_active_color)
+    (legal_squares(i1, j1).include? [i2, j2]) && 
+    (color(i1, j1) == get_active_color) &&
+    active_color_not_in_check
   end
 
   def castling_move(i1, j1, i2, j2)
@@ -414,18 +457,13 @@ class Position < ApplicationRecord
     # # #
 
   def set_board(i1, j1, i2, j2)
-
-    if validate_move(i1, j1, i2, j2)
-      if castling_move(i1, i2, j1, j2)
-      elsif en_passant_move(i1, i2, j1, j2)
-      else
-        next_board = board
-        next_board[i2 - 1][j2 - 1] = board[i1 - 1][j1 - 1]
-        next_board[i1 - 1][j1 - 1] = nil
-        next_board
-      end
+    if castling_move(i1, i2, j1, j2)
+    elsif en_passant_move(i1, i2, j1, j2)
     else
-      board
+      next_board = board
+      next_board[i2 - 1][j2 - 1] = board[i1 - 1][j1 - 1]
+      next_board[i1 - 1][j1 - 1] = nil
+      next_board
     end
   end
 
@@ -477,5 +515,21 @@ class Position < ApplicationRecord
   end
 
   def inactive_color_cannot_be_in_check
+    case get_active_color
+    when :w
+      get_pieces_by_color(:w).each do |piece|
+        if capturable_squares(*piece).include? get_king_by_color(:b)
+          errors.add("Check")
+          return
+        end
+      end
+    when :b
+      get_pieces_by_color(:b).each do |piece|
+        if capturable_squares(*piece).include? get_king_by_color(:w)
+          errors.add("Check")
+          return
+        end
+      end
+    end
   end
 end
