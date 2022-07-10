@@ -11,6 +11,23 @@ class Position < ApplicationRecord
     fen.match Fen::REGEX
   end
 
+  def board
+    board = []
+    get_state_from_fen[1..8].each do |row|
+      rank = []
+      row.split("").each do |char|
+        case char
+        when /\d/
+          char.to_i.times { rank.push(nil) }
+        when /\w/
+          rank.push(char)
+        end
+      end
+      board.push(rank)
+    end
+    board 
+  end
+
   def get_active_color
     get_state_from_fen[9].to_sym
   end
@@ -30,21 +47,8 @@ class Position < ApplicationRecord
     full_moves = get_state_from_fen[13].to_i
   end
 
-  def board
-    board = []
-    get_state_from_fen[1..8].each do |row|
-      rank = []
-      row.split("").each do |char|
-        case char
-        when /\d/
-          char.to_i.times { rank.push(nil) }
-        when /\w/
-          rank.push(char)
-        end
-      end
-      board.push(rank)
-    end
-    board 
+  def state
+    [board, get_active_color, get_castling_rights, get_en_passant_square, get_half_moves, get_full_moves]
   end
 
 # Retrieval of data from FEN ends here"
@@ -59,20 +63,22 @@ class Position < ApplicationRecord
     !in_bounds(i, j)
   end
 
-  def get_square(i, j, template=board)
-    # If the square is occupied, return the occupying piece, else nil. If out of bounds, return false.
+  def get_square(i, j, template=state)
+    # For a given template position, if the square is occupied, return the occupying piece, else nil. 
+    # If out of bounds, return false.
+    # If a template is not given, it is assumed to be the board for the position object.
     if in_bounds(i, j)
-      template[i-1][j-1]
+      template[0][i-1][j-1]
     else
       false
     end
   end
 
-  def available(i, j, template=board)
+  def available(i, j, template=state)
     get_square(i, j, template).nil?
   end
 
-  def occupied(i, j, template=board)
+  def occupied(i, j, template=state)
     if in_bounds(i, j)
       !available(i, j, template)
     else
@@ -80,7 +86,7 @@ class Position < ApplicationRecord
     end
   end
 
-  def color(i, j, template=board)
+  def color(i, j, template=state)
     # If the square is occupied, return the piece's color, else nil.
     case get_square(i, j, template)
     when /[[:upper:]]/
@@ -92,13 +98,13 @@ class Position < ApplicationRecord
     end
   end
 
-  def get_pieces_by_color(color, template = board)
+  def get_pieces_by_color(color, template=state)
     white_pieces = []
     black_pieces = []
-    template.each_with_index do |row, i|
+    template[0].each_with_index do |row, i|
       row.each_with_index do |square, j|
-        white_pieces.push([i+1, j+1]) if color(i+1, j+1) == :w
-        black_pieces.push([i+1, j+1]) if color(i+1, j+1) == :b
+        white_pieces.push([i+1, j+1]) if color(i+1, j+1, template) == :w
+        black_pieces.push([i+1, j+1]) if color(i+1, j+1, template) == :b
       end
     end
     case color
@@ -109,13 +115,13 @@ class Position < ApplicationRecord
     end
   end
 
-  def get_king_by_color(color)
+  def get_king_by_color(color, template=state)
     white_king = nil
     black_king = nil
-    board.each_with_index do |row, i|
+    template[0].each_with_index do |row, i|
       row.each_with_index do |square, j|
-        white_king = [i+1, j+1] if get_square(i+1, j+1) == "K"
-        black_king = [i+1, j+1] if get_square(i+1, j+1) == "k"
+        white_king = [i+1, j+1] if get_square(i+1, j+1, template) == "K"
+        black_king = [i+1, j+1] if get_square(i+1, j+1, template) == "k"
         break if white_king && black_king
       end
     end
@@ -143,130 +149,130 @@ class Position < ApplicationRecord
 
   ### Movement-pertaining methods begin here
 
-  def available_squares(i, j)
+  def available_squares(i, j, template=state)
     # All available moves to a free square for a piece, DOESN'T TAKE CHECKS/ETC INTO ACCOUNT
     squares = []
-    case get_square(i, j)&.upcase
+    case get_square(i, j, template)&.upcase
     when 'K'
-      squares.push([i-1, j]) if available(i-1, j)
-      squares.push([i-1, j+1]) if available(i-1, j+1)
-      squares.push([i, j+1]) if available(i, j+1)
-      squares.push([i+1, j+1]) if available(i+1, j+1)
-      squares.push([i+1, j]) if available(i+1, j)
-      squares.push([i+1, j-1]) if available(i+1, j-1)
-      squares.push([i, j-1]) if available(i, j-1)
-      squares.push([i-1, j-1]) if available(i-1, j-1)
+      squares.push([i-1, j]) if available(i-1, j, template)
+      squares.push([i-1, j+1]) if available(i-1, j+1, template)
+      squares.push([i, j+1]) if available(i, j+1, template)
+      squares.push([i+1, j+1]) if available(i+1, j+1, template)
+      squares.push([i+1, j]) if available(i+1, j, template)
+      squares.push([i+1, j-1]) if available(i+1, j-1, template)
+      squares.push([i, j-1]) if available(i, j-1, template)
+      squares.push([i-1, j-1]) if available(i-1, j-1, template)
     when 'Q'
       i_ = i; j_ = j
-      while available(i_-1, j_)
+      while available(i_-1, j_, template)
         squares.push([i_-1, j_])
         i_ -= 1
       end
       i_ = i; j_ = j
-      while available(i_-1, j_+1)
+      while available(i_-1, j_+1, template)
         squares.push([i_-1, j_+1])
         i_ -= 1
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_, j_+1)
+      while available(i_, j_+1, template)
         squares.push([i_, j_+1])
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_+1)
+      while available(i_+1, j_+1, template)
         squares.push([i_+1, j_+1])
         i_ += 1
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_)
+      while available(i_+1, j_, template)
         squares.push([i_+1, j_])
         i_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_-1)
+      while available(i_+1, j_-1, template)
         squares.push([i_+1, j_-1])
         i_ += 1
         j_ -= 1
       end
       i_ = i; j_ = j
-      while available(i_, j_-1)
+      while available(i_, j_-1, template)
         squares.push([i_, j_-1])
         j_ -= 1
       end
       i_ = i; j_ = j
-      while available(i_-1, j_-1)
+      while available(i_-1, j_-1, template)
         squares.push([i_-1, j_-1])
         i_ -= 1
         j_ -= 1
       end
     when 'R'
       i_ = i; j_ = j
-      while available(i_-1, j_)
+      while available(i_-1, j_, template)
         squares.push([i_-1, j_])
         i_ -= 1
       end
       i_ = i; j_ = j
-      while available(i_, j_+1)
+      while available(i_, j_+1, template)
         squares.push([i_, j_+1])
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_)
+      while available(i_+1, j_, template)
         squares.push([i_+1, j_])
         i_ += 1
       end
       i_ = i; j_ = j
-      while available(i_, j_-1)
+      while available(i_, j_-1, template)
         squares.push([i_, j_-1])
         j_ -= 1
       end
     when 'N'
-      squares.push([i-2, j+1]) if available(i-2, j+1)
-      squares.push([i-1, j+2]) if available(i-1, j+2)
-      squares.push([i+1, j+2]) if available(i+1, j+2)
-      squares.push([i+2, j+1]) if available(i+2, j+1)
-      squares.push([i+2, j-1]) if available(i+2, j-1)
-      squares.push([i+1, j-2]) if available(i+1, j-2)
-      squares.push([i-1, j-2]) if available(i-1, j-2)
-      squares.push([i-2, j-1]) if available(i-2, j-1)
+      squares.push([i-2, j+1]) if available(i-2, j+1, template)
+      squares.push([i-1, j+2]) if available(i-1, j+2, template)
+      squares.push([i+1, j+2]) if available(i+1, j+2, template)
+      squares.push([i+2, j+1]) if available(i+2, j+1, template)
+      squares.push([i+2, j-1]) if available(i+2, j-1, template)
+      squares.push([i+1, j-2]) if available(i+1, j-2, template)
+      squares.push([i-1, j-2]) if available(i-1, j-2, template)
+      squares.push([i-2, j-1]) if available(i-2, j-1, template)
     when 'B'
       i_ = i; j_ = j
-      while available(i_-1, j_+1)
+      while available(i_-1, j_+1, template)
         squares.push([i_-1, j_+1])
         i_ -= 1
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_+1)
+      while available(i_+1, j_+1, template)
         squares.push([i_+1, j_+1])
         i_ += 1
         j_ += 1
       end
       i_ = i; j_ = j
-      while available(i_+1, j_-1)
+      while available(i_+1, j_-1, template)
         squares.push([i_+1, j_-1])
         i_ += 1
         j_ -= 1
       end
       i_ = i; j_ = j
-      while available(i_-1, j_-1)
+      while available(i_-1, j_-1, template)
         squares.push([i_-1, j_-1])
         i_ -= 1
         j_ -= 1
       end
     when 'P'
-      case color(i, j)
+      case color(i, j, template)
       when :w
-        squares.push([i-1, j]) if available(i-1, j)
+        squares.push([i-1, j]) if available(i-1, j, template)
         if i == 7
-          squares.push([i-2, j]) if available(i-2, j)
+          squares.push([i-2, j]) if available(i-2, j, template)
         end
       when :b
-        squares.push([i+1, j]) if available(i+1, j)
+        squares.push([i+1, j]) if available(i+1, j, template)
         if i == 2
-          squares.push([i+2, j]) if available(i+2, j)
+          squares.push([i+2, j]) if available(i+2, j, template)
         end
       end
     when nil
@@ -275,140 +281,148 @@ class Position < ApplicationRecord
     squares
   end
 
-  def capturable_squares(i, j)
+  def capturable_squares(i, j, template=state)
     squares = []
-    case get_square(i, j)&.upcase
+    case get_square(i, j, template)&.upcase
     when 'K'
-      squares.push([i-1, j]) if occupied(i-1, j) && color(i-1, j) != color(i, j)
-      squares.push([i-1, j+1]) if occupied(i-1, j+1) && color(i-1, j+1) != color(i, j)
-      squares.push([i, j+1]) if occupied(i, j+1) && color(i, j+1) != color(i, j)
-      squares.push([i+1, j+1]) if occupied(i+1, j+1) && color(i+1, j+1) != color(i, j)
-      squares.push([i+1, j]) if occupied(i+1, j) && color(i+1, j) != color(i, j)
-      squares.push([i+1, j-1]) if occupied(i+1, j-1) && color(i+1, j-1) != color(i, j)
-      squares.push([i, j-1]) if occupied(i, j-1) && color(i, j-1) != color(i, j)
-      squares.push([i-1, j-1]) if occupied(i-1, j-1) && color(i-1, j-1) != color(i, j)
+      squares.push([i-1, j]) if occupied(i-1, j, template) &&
+                                color(i-1, j, template) != color(i, j, template)
+      squares.push([i-1, j+1]) if occupied(i-1, j+1, template) &&
+                                color(i-1, j+1, template) != color(i, j, template)
+      squares.push([i, j+1]) if occupied(i, j+1, template) &&
+                                color(i, j+1, template) != color(i, j, template)
+      squares.push([i+1, j+1]) if occupied(i+1, j+1, template) &&
+                                color(i+1, j+1, template) != color(i, j, template)
+      squares.push([i+1, j]) if occupied(i+1, j, template) &&
+                                color(i+1, j, template) != color(i, , templatej)
+      squares.push([i+1, j-1]) if occupied(i+1, j-1, template) &&
+                                color(i+1, j-1, template) != color(i, j, template)
+      squares.push([i, j-1]) if occupied(i, j-1, template) &&
+                                color(i, j-1, template) != color(i, j, template)
+      squares.push([i-1, j-1]) if occupied(i-1, j-1, template) && 
+                                color(i-1, j-1, template) != color(i, j, template)
     when 'Q'
       i_ = i; j_ = j
-      until occupied(i_-1, j_) || out_of_bounds(i_-1, j_)
+      until occupied(i_-1, j_, template) || out_of_bounds(i_-1, j_)
         i_ -= 1 
       end
-      squares.push([i_-1, j_]) if color(i_-1, j_) && color(i_-1, j_) != color(i, j)  
+      squares.push([i_-1, j_]) if color(i_-1, j_, template) && color(i_-1, j_, template) != color(i, j, template)  
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_+1) || out_of_bounds(i_-1, j_+1)
+      until occupied(i_-1, j_+1, template) || out_of_bounds(i_-1, j_+1)
         i_ -= 1
         j_ += 1
       end
-      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) && color(i_-1, j_+1) != color(i, j)
+      squares.push([i_-1, j_+1]) if color(i_-1, j_+1, template) && color(i_-1, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_, j_+1) || out_of_bounds(i_, j_+1)
+      until occupied(i_, j_+1, template) || out_of_bounds(i_, j_+1)
         j_ += 1 
       end
-      squares.push([i_, j_+1]) if color(i_, j_+1) && color(i_, j_+1) != color(i, j)
+      squares.push([i_, j_+1]) if color(i_, j_+1, template) && color(i_, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_+1) || out_of_bounds(i_+1, j_+1)
+      until occupied(i_+1, j_+1, template) || out_of_bounds(i_+1, j_+1)
         i_ += 1 
         j_ += 1
       end
-      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) && color(i_+1, j_+1) != color(i, j)
+      squares.push([i_+1, j_+1]) if color(i_+1, j_+1, template) && color(i_+1, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_) || out_of_bounds(i_+1, j_)
+      until occupied(i_+1, j_, template) || out_of_bounds(i_+1, j_)
         i_ += 1 
       end
-      squares.push([i_+1, j_]) if color(i_+1, j_) && color(i_+1, j_) != color(i, j)
+      squares.push([i_+1, j_]) if color(i_+1, j_, template) && color(i_+1, j_, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_-1) || out_of_bounds(i_+1, j_-1)
+      until occupied(i_+1, j_-1, template) || out_of_bounds(i_+1, j_-1)
         i_ += 1
         j_ -= 1
       end
-      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) && color(i_+1, j_-1) != color(i, j)
+      squares.push([i_+1, j_-1]) if color(i_+1, j_-1, template) && color(i_+1, j_-1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_, j_-1) || out_of_bounds(i_, j_-1)
+      until occupied(i_, j_-1, template) || out_of_bounds(i_, j_-1)
         j_ -= 1 
       end
-      squares.push([i_, j_-1]) if color(i_, j_-1) && color(i_, j_-1) != color(i, j)
+      squares.push([i_, j_-1]) if color(i_, j_-1, template) && color(i_, j_-1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_-1) || out_of_bounds(i_-1, j_-1)
+      until occupied(i_-1, j_-1, template) || out_of_bounds(i_-1, j_-1)
         i_ -= 1 
         j_ -= 1
       end
-      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) && color(i_-1, j_-1) != color(i, j)
+      squares.push([i_-1, j_-1]) if color(i_-1, j_-1, template) && color(i_-1, j_-1, template) != color(i, j, template)
 
     when 'R'
       i_ = i; j_ = j
-      until occupied(i_-1, j_) || out_of_bounds(i_-1, j_)
+      until occupied(i_-1, j_, template) || out_of_bounds(i_-1, j_)
         i_ -= 1 
       end
-      squares.push([i_-1, j_]) if color(i_-1, j_) && color(i_-1, j_) != color(i, j)  
+      squares.push([i_-1, j_]) if color(i_-1, j_, template) && color(i_-1, j_, template) != color(i, j, template)  
 
       i_ = i; j_ = j
-      until occupied(i_, j_+1) || out_of_bounds(i_, j_+1)
+      until occupied(i_, j_+1, template) || out_of_bounds(i_, j_+1)
         j_ += 1 
       end
-      squares.push([i_, j_+1]) if color(i_, j_+1) && color(i_, j_+1) != color(i, j)
+      squares.push([i_, j_+1]) if color(i_, j_+1, template) && color(i_, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_) || out_of_bounds(i_+1, j_)
+      until occupied(i_+1, j_, template) || out_of_bounds(i_+1, j_)
         i_ += 1 
       end
-      squares.push([i_+1, j_]) if color(i_+1, j_) && color(i_+1, j_) != color(i, j)
+      squares.push([i_+1, j_]) if color(i_+1, j_, template) && color(i_+1, j_, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_, j_-1) || out_of_bounds(i_, j_-1)
+      until occupied(i_, j_-1, template) || out_of_bounds(i_, j_-1)
         j_ -= 1 
       end
-      squares.push([i_, j_-1]) if color(i_, j_-1) && color(i_, j_-1) != color(i, j)
+      squares.push([i_, j_-1]) if color(i_, j_-1, template) && color(i_, j_-1, template) != color(i, j, template)
     when 'B'
       i_ = i; j_ = j
-      until occupied(i_-1, j_+1) || out_of_bounds(i_-1, j_+1)
+      until occupied(i_-1, j_+1, template) || out_of_bounds(i_-1, j_+1)
         i_ -= 1
         j_ += 1
       end
-      squares.push([i_-1, j_+1]) if color(i_-1, j_+1) && color(i_-1, j_+1) != color(i, j)
+      squares.push([i_-1, j_+1]) if color(i_-1, j_+1, template) && color(i_-1, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_+1) || out_of_bounds(i_+1, j_+1)
+      until occupied(i_+1, j_+1, template) || out_of_bounds(i_+1, j_+1)
         i_ += 1 
         j_ += 1
       end
-      squares.push([i_+1, j_+1]) if color(i_+1, j_+1) && color(i_+1, j_+1) != color(i, j)
+      squares.push([i_+1, j_+1]) if color(i_+1, j_+1, template) && color(i_+1, j_+1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_+1, j_-1) || out_of_bounds(i_+1, j_-1)
+      until occupied(i_+1, j_-1, template) || out_of_bounds(i_+1, j_-1)
         i_ += 1
         j_ -= 1
       end
-      squares.push([i_+1, j_-1]) if color(i_+1, j_-1) && color(i_+1, j_-1) != color(i, j)
+      squares.push([i_+1, j_-1]) if color(i_+1, j_-1, template) && color(i_+1, j_-1, template) != color(i, j, template)
 
       i_ = i; j_ = j
-      until occupied(i_-1, j_-1) || out_of_bounds(i_-1, j_-1)
+      until occupied(i_-1, j_-1, template) || out_of_bounds(i_-1, j_-1)
         i_ -= 1 
         j_ -= 1
       end
-      squares.push([i_-1, j_-1]) if color(i_-1, j_-1) && color(i_-1, j_-1) != color(i, j)
+      squares.push([i_-1, j_-1]) if color(i_-1, j_-1, template) && color(i_-1, j_-1, template) != color(i, j, template)
     when 'N'
-      squares.push([i-2, j+1]) if occupied(i-2, j+1) && color(i-2, j+1) != color(i, j)
-      squares.push([i-1, j+2]) if occupied(i-1, j+2) && color(i-1, j+2) != color(i, j)
-      squares.push([i+1, j+2]) if occupied(i+1, j+2) && color(i+1, j+2) != color(i, j)
-      squares.push([i+2, j+1]) if occupied(i+2, j+1) && color(i+2, j+1) != color(i, j)
-      squares.push([i+2, j-1]) if occupied(i+2, j-1) && color(i+2, j-1) != color(i, j)
-      squares.push([i+1, j-2]) if occupied(i+1, j-2) && color(i+1, j-2) != color(i, j)
-      squares.push([i-1, j-2]) if occupied(i-1, j-2) && color(i-1, j-2) != color(i, j)
-      squares.push([i-2, j-1]) if occupied(i-2, j-1) && color(i-2, j-1) != color(i, j)
+      squares.push([i-2, j+1]) if occupied(i-2, j+1, template) && color(i-2, j+1, template) != color(i, j, template)
+      squares.push([i-1, j+2]) if occupied(i-1, j+2, template) && color(i-1, j+2, template) != color(i, j, template)
+      squares.push([i+1, j+2]) if occupied(i+1, j+2, template) && color(i+1, j+2, template) != color(i, j, template)
+      squares.push([i+2, j+1]) if occupied(i+2, j+1, template) && color(i+2, j+1, template) != color(i, j, template)
+      squares.push([i+2, j-1]) if occupied(i+2, j-1, template) && color(i+2, j-1, template) != color(i, j, template)
+      squares.push([i+1, j-2]) if occupied(i+1, j-2, template) && color(i+1, j-2, template) != color(i, j, template)
+      squares.push([i-1, j-2]) if occupied(i-1, j-2, template) && color(i-1, j-2, template) != color(i, j, template)
+      squares.push([i-2, j-1]) if occupied(i-2, j-1, template) && color(i-2, j-1, template) != color(i, j, template)
     when 'P'
-      case color(i, j)
+      case color(i, j, template)
       when :w
-        squares.push([i-1, j-1]) if occupied(i-1, j-1) && color(i-1, j-1) != color(i, j)
-        squares.push([i-1, j+1]) if occupied(i-1, j+1) && color(i-1, j+1) != color(i, j)
+        squares.push([i-1, j-1]) if occupied(i-1, j-1, template) && color(i-1, j-1, template) != color(i, j, template)
+        squares.push([i-1, j+1]) if occupied(i-1, j+1, template) && color(i-1, j+1, template) != color(i, j, template)
       when :b
-        squares.push([i+1, j-1]) if occupied(i+1, j-1) && color(i+1, j-1) != color(i, j)
-        squares.push([i+1, j+1]) if occupied(i+1, j+1) && color(i+1, j+1) != color(i, j)
+        squares.push([i+1, j-1]) if occupied(i+1, j-1, template) && color(i+1, j-1, template) != color(i, j, template)
+        squares.push([i+1, j+1]) if occupied(i+1, j+1, template) && color(i+1, j+1, template) != color(i, j, template)
       end
     when nil
       squares = []
@@ -416,12 +430,12 @@ class Position < ApplicationRecord
     squares
   end
 
-  def legal_squares(i, j)
+  def legal_squares(i, j, template=board)
     # No checks yet!!
-    available_squares(i, j) + capturable_squares(i, j)
+    available_squares(i, j, template) + capturable_squares(i, j, template)
   end
 
-  def active_color_not_in_check
+  def active_color_not_in_check(template=board)
     case get_active_color
     when :w
       get_pieces_by_color(:w).each do |piece|
