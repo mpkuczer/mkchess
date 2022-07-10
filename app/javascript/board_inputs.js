@@ -16,12 +16,14 @@ window.boardInputs = () => {
                 return
             } 
             queue[0] = coords
-            evt.target.setAttribute("id", "tile_selected")
+            evt.target.setAttribute("id", "selected")
         } else if (queue[0][0] == coords[0] &&
                    queue[0][1] == coords[1]) {
             queue[0] = null
             queue[1] = null
-            document.getElementById("tile_selected").removeAttribute("id")
+            if (document.getElementById("selected")) {
+                document.getElementById("selected").removeAttribute("id")
+            }
             return
         } else {
             queue[1] = coords
@@ -41,15 +43,22 @@ window.boardInputs = () => {
             }).done((data, textStatus, jqHXR) => {
                 queue[0] = null;
                 queue[1] = null;
-                if (document.getElementById("tile_selected")) {
-                    document.getElementById("tile_selected").removeAttribute("id")
+                if (document.getElementById("selected")) {
+                    document.getElementById("selected").removeAttribute("id")
+                }
+                if (data.hasOwnProperty('offendingPiece')) {
+                    let invalidCoords = data.offendingPiece
+                    console.log(data)
+                    let invalidTile = board.children[invalidCoords[0] - 1].children[invalidCoords[1] - 1]
+                    invalidTile.setAttribute("id", "invalid")
+                    setTimeout(() => { invalidTile.removeAttribute("id") }, 500)
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log('error')
                 queue[0] = null;
                 queue[1] = null;
-                if (document.getElementById("tile_selected")) {
-                    document.getElementById("tile_selected").removeAttribute("id")
+                if (document.getElementById("selected")) {
+                    document.getElementById("selected").removeAttribute("id")
                 }
             })} 
         }

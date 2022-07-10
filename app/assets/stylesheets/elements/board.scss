@@ -85,10 +85,14 @@
             min-width: 20px;
             background-size: cover;
             position: relative;
-            &#tile_selected {
-                background-color: var(--select-color) !important;
+            transition: background-color 0.05s ease-out;
+            &#selected {
+                background-color: var(--select-color);
             }
-            &.tile_successful_move {
+            &#invalid {
+                background-color: var(--invalid-color);
+            }
+            &.successful {
                 background-color: var(--success-color) !important;
             }
             &.king-white {

@@ -25,27 +25,18 @@ class GamesController < ApplicationController
   def move
     @position = Position.find(params[:position_id].to_i)
     @game = @position.game
+    @move = [ params[:i1].to_i, params[:j1].to_i, params[:i2].to_i, params[:j2].to_i ]
 
     if @position == @game.positions.order(:order).last
-      if @position.validate_move(params[:i1].to_i,
-                                 params[:j1].to_i,
-                                 params[:i2].to_i,
-                                 params[:j2].to_i)
-        fen = @position.to_fen(params[:i1].to_i,
-                              params[:j1].to_i,
-                              params[:i2].to_i,
-                              params[:j2].to_i)
+      if @position.validate_move(*@move)
+        fen = @position.to_fen(*@move)
         @game.positions.build(fen: fen, order: @position.order + 1).save
-        @new_position = @game.positions.last
-        @move = [params[:i1].to_i,
-                params[:j1].to_i,
-                params[:i2].to_i,
-                params[:j2].to_i]
+        @new_position = @game.positions.order(:order).last
         respond_to do |format|
-          format.js { render 'games/new', layout: false, locals: { position: @new_position } }
+          format.js { render 'games/new', layout: false, locals: { position: @new_position, move: @move } }
         end
       else
-        render json: { error: "Invalid move" }
+        render json: { error: "Invalid move", offendingPiece: @move[0..1]}
       end
     else
       render json: { error: "Past position" }
@@ -61,7 +52,6 @@ class GamesController < ApplicationController
     when :previous
       @new_position = @position.order == 1 ? @position : @game.positions.find_by(order: @position.order - 1)
     when :next
-      byebug
       @new_position = @position.order == @game.positions.count ? @position : @game.positions.find_by(order: @position.order + 1)
     when :current
       @new_position = @game.positions.order(:order).last

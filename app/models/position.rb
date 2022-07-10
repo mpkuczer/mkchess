@@ -48,7 +48,12 @@ class Position < ApplicationRecord
   end
 
   def state
-    [board, get_active_color, get_castling_rights, get_en_passant_square, get_half_moves, get_full_moves]
+    { board: board,
+      get_active_color: get_active_color,
+      get_castling_right: get_castling_rights,
+      get_en_passant_square: get_en_passant_square,
+      get_half_moves: get_half_moves,
+      get_full_moves: get_full_moves }
   end
 
 # Retrieval of data from FEN ends here"
@@ -68,7 +73,7 @@ class Position < ApplicationRecord
     # If out of bounds, return false.
     # If a template is not given, it is assumed to be the board for the position object.
     if in_bounds(i, j)
-      template[0][i-1][j-1]
+      template[:board][i-1][j-1]
     else
       false
     end
@@ -98,10 +103,21 @@ class Position < ApplicationRecord
     end
   end
 
+  def switch_color(color)
+    case color
+    when :w 
+      :b
+    when :b
+      :w
+    else
+      nil
+    end
+  end
+
   def get_pieces_by_color(color, template=state)
     white_pieces = []
     black_pieces = []
-    template[0].each_with_index do |row, i|
+    template[:board].each_with_index do |row, i|
       row.each_with_index do |square, j|
         white_pieces.push([i+1, j+1]) if color(i+1, j+1, template) == :w
         black_pieces.push([i+1, j+1]) if color(i+1, j+1, template) == :b
@@ -118,7 +134,7 @@ class Position < ApplicationRecord
   def get_king_by_color(color, template=state)
     white_king = nil
     black_king = nil
-    template[0].each_with_index do |row, i|
+    template[:board].each_with_index do |row, i|
       row.each_with_index do |square, j|
         white_king = [i+1, j+1] if get_square(i+1, j+1, template) == "K"
         black_king = [i+1, j+1] if get_square(i+1, j+1, template) == "k"
@@ -294,7 +310,7 @@ class Position < ApplicationRecord
       squares.push([i+1, j+1]) if occupied(i+1, j+1, template) &&
                                 color(i+1, j+1, template) != color(i, j, template)
       squares.push([i+1, j]) if occupied(i+1, j, template) &&
-                                color(i+1, j, template) != color(i, , templatej)
+                                color(i+1, j, template) != color(i, j, template)
       squares.push([i+1, j-1]) if occupied(i+1, j-1, template) &&
                                 color(i+1, j-1, template) != color(i, j, template)
       squares.push([i, j-1]) if occupied(i, j-1, template) &&
@@ -430,25 +446,18 @@ class Position < ApplicationRecord
     squares
   end
 
-  def legal_squares(i, j, template=board)
+  def legal_squares(i, j, template=state)
     # No checks yet!!
     available_squares(i, j, template) + capturable_squares(i, j, template)
   end
 
-  def active_color_not_in_check(template=board)
-    case get_active_color
-    when :w
-      get_pieces_by_color(:w).each do |piece|
-        if capturable_squares(*piece).include? get_king_by_color(:b)
-          return false
-        end
-      end
-    when :b
-      get_pieces_by_color(:b).each do |piece|
-        if capturable_squares(*piece).include? get_king_by_color(:w)
-          errors.add("Check")
-          return false
-        end
+  def inactive_color_not_in_check(template=state)
+    active = template[:get_active_color]
+    inactive = switch_color(active)
+    get_pieces_by_color(active).each do |piece|
+      if capturable_squares(*piece, template).include? get_king_by_color(inactive, template)
+        errors.add("Check")
+        return false
       end
     end
     true
@@ -458,7 +467,7 @@ class Position < ApplicationRecord
     # Checks if the move from (i1, j1) to (i2, j2) is a valid chess move.
     (legal_squares(i1, j1).include? [i2, j2]) && 
     (color(i1, j1) == get_active_color) &&
-    active_color_not_in_check
+    inactive_color_not_in_check(set_state(i1, j1, i2, j2))
   end
 
   def castling_move(i1, j1, i2, j2)
@@ -470,32 +479,35 @@ class Position < ApplicationRecord
 
     # # #
 
-  def set_board(i1, j1, i2, j2)
+  def set_state(i1, j1, i2, j2)
+    # Return state of a new position after making a move [i1, j1] => [i2, j2]
     if castling_move(i1, i2, j1, j2)
     elsif en_passant_move(i1, i2, j1, j2)
     else
-      next_board = board
-      next_board[i2 - 1][j2 - 1] = board[i1 - 1][j1 - 1]
-      next_board[i1 - 1][j1 - 1] = nil
-      next_board
+      next_state = state
+      next_state[:board][i2 - 1][j2 - 1] = state[:board][i1 - 1][j1 - 1]
+      next_state[:board][i1 - 1][j1 - 1] = nil
+      next_state[:get_active_color] = switch_color(state[:get_active_color])
+      next_state[:get_full_moves] = ((order + 1) / 2).ceil
+      next_state
     end
   end
 
   def to_fen(i1, j1, i2, j2)
-    # Return the fen of position that ensues after a legal move [i1, j1] -> [i2, j2]
+    # Return the fen of position that ensues after move [i1, j1] -> [i2, j2]
 
     rows = ""
-    set_board(i1, j1, i2, j2).each do |row|
+    set_state(i1, j1, i2, j2)[:board].each do |row|
       row_long = row.map { |x| x.nil? ? '_' : x } .join
       rows << "#{row_long.gsub(/_+/) { |capture| capture.length.to_s }}/"
     end
 
     rows_fragment = rows.chomp("/")
-    color_fragment = get_active_color == :b ? :w : :b
-    castling_fragment = get_castling_rights.to_s.gsub(castling_move(i1, j1, i2, j2).to_s, "")
-    en_passant_fragment = "-".to_s # IN PROGRESS
-    half_moves_fragment = get_half_moves.to_s
-    full_moves_fragment = ((order + 1)/2).ceil
+    color_fragment = set_state(i1, j1, i2, j2)[:get_active_color]
+    castling_fragment = set_state(i1, j1, i2, j2)[:get_castling_rights]
+    en_passant_fragment = set_state(i1, j1, i2, j2)[:get_en_passant_square]
+    half_moves_fragment = set_state(i1, j1, i2, j2)[:get_half_moves]
+    full_moves_fragment = set_state(i1, j1, i2, j2)[:get_full_moves]
 
     fen = "#{rows_fragment} #{color_fragment} #{castling_fragment} #{en_passant_fragment} #{half_moves_fragment} #{full_moves_fragment}"
   end
