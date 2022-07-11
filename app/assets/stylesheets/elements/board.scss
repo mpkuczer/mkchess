@@ -145,22 +145,29 @@
             }
         }
     }
-  }
-
-
-
-
-.rank:nth-of-type(odd) .tile:nth-of-type(odd), .rank:nth-of-type(even) .tile:nth-of-type(even) {
-    background-color: var(--light-color);
-    &.successful {
-        background-color: var(--success-light-color);
+    .rank:nth-of-type(odd) .tile:nth-of-type(odd), .rank:nth-of-type(even) .tile:nth-of-type(even) {
+        background-color: var(--light-color);
+        &.successful {
+            background-color: var(--success-light-color);
+        }
+    }
+    
+    .rank:nth-of-type(odd) .tile:nth-of-type(even), .rank:nth-of-type(even) .tile:nth-of-type(odd) {
+        background-color: var(--dark-color);
+        &.successful {
+            background-color: var(--success-dark-color);
+        }
+    }
+    &.reversed {
+        flex-direction: column-reverse;
+        .rank {
+            flex-direction: row-reverse;
+        }
     }
 }
 
-.rank:nth-of-type(odd) .tile:nth-of-type(even), .rank:nth-of-type(even) .tile:nth-of-type(odd) {
-    background-color: var(--dark-color);
-    &.successful {
-        background-color: var(--success-dark-color);
-    }
-}
+
+
+
+
 

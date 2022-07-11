@@ -26,7 +26,6 @@ class GamesController < ApplicationController
     @position = Position.find(params[:position_id].to_i)
     @game = @position.game
     @move = [ params[:i1].to_i, params[:j1].to_i, params[:i2].to_i, params[:j2].to_i ]
-
     if @position == @game.positions.order(:order).last
       if @position.validate_move(*@move)
         fen = @position.to_fen(*@move)

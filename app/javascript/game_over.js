@@ -1,8 +1,4 @@
 window.gameOver = (result) => {
-    const full_names = {
-        'w': "White",
-        'b': "Black"
-    }
     const positionsFooter = document.querySelector('.positions-footer')
     positionsFooter.style = "color: var(--success-light-color); font-size: 2rem;"
 
