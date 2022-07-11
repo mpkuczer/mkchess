@@ -470,12 +470,12 @@ class Position < ApplicationRecord
   end
 
   def active_color_in_check(template=state)
-    king = get_king_by_color(template[:get_active_color])
+    king = get_king_by_color(template[:get_active_color], template)
     piece_attacked(*king, template)
   end
 
   def inactive_color_not_in_check(template=state)
-    king = get_king_by_color(switch_color(template[:get_active_color]))
+    king = get_king_by_color(switch_color(template[:get_active_color]), template)
     !piece_attacked(*king, template)
   end
 

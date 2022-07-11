@@ -45,17 +45,17 @@ window.boardInputs = () => {
                 if (document.getElementById("selected")) {
                     document.getElementById("selected").removeAttribute("id")
                 }
+                if (data.hasOwnProperty('offendingPiece')) {
+                    let invalidCoords = data.offendingPiece
+                    let invalidTile = board.children[invalidCoords[0] - 1].children[invalidCoords[1] - 1]
+                    invalidTile.setAttribute("id", "invalid")
+                    setTimeout(() => { invalidTile.removeAttribute("id") }, 500)
+                }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 queue[0] = null;
                 queue[1] = null;
                 if (document.getElementById("selected")) {
                     document.getElementById("selected").removeAttribute("id")
-                }
-                if (jqXHR.responseJSON.hasOwnProperty('offendingPiece')) {
-                    let invalidCoords = jqXHR.responseJSON.offendingPiece
-                    let invalidTile = board.children[invalidCoords[0] - 1].children[invalidCoords[1] - 1]
-                    invalidTile.setAttribute("id", "invalid")
-                    setTimeout(() => { invalidTile.removeAttribute("id") }, 500)
                 }
             })} 
         }

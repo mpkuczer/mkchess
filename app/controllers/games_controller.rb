@@ -56,10 +56,10 @@ class GamesController < ApplicationController
           end
         end
       else
-        render json: { error: "Invalid move", offendingPiece: @move[0..1] }, status: :unprocessable_entity
+        render json: { error: "Invalid move", offendingPiece: @move[0..1] }
       end
     else
-      render json: { error: "Past position" }, status: :unprocessable_entity
+      render json: { error: "Past position" }
     end
   end
 
