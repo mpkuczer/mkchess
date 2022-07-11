@@ -1,11 +1,33 @@
+function isLowerCase(str)
+{
+    return str == str.toLowerCase() && str != str.toUpperCase();
+}
+
 window.boardInputs = () => {
     const board = document.querySelector('.board');
     const positionData = document.querySelector('#position_data').getAttribute('data-position');
     const positionId = document.querySelector('#position_data').getAttribute('data-id');
+    const positionActiveColor = document.querySelector('#position_data').getAttribute('data-active-color');
+
     const position = JSON.parse(positionData);
+
+    const whitePieces = position.map((symbol) => {
+        symbol.isLowerCase ? symbol : null
+    })
+    const blackPieces = position.map((symbol) => {
+        symbol.isLowerCase ? null : symbol
+    });
+
+
+
     let queue = [null, null];
 
     const processInput = (evt) => {
+        const getSquareCoordinates = (square) => {
+            const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
+            const j = Array.from(square.parentNode.children).indexOf(square) + 1
+            return [i, j]
+        } 
 
         let coords = getSquareCoordinates(evt.target)
         if (queue[0] === null) {
@@ -60,17 +82,21 @@ window.boardInputs = () => {
             })} 
         }
 
-    const getSquareCoordinates = (square) => {
-        const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
-        const j = Array.from(square.parentNode.children).indexOf(square) + 1
-        return [i, j]
-    } 
-
     Array.from(board.children).forEach((row, i) => {
         Array.from(row.children).forEach((square, j) => {
-            square.addEventListener('click', (evt) => {
-                processInput(evt);
-            });
+            if (positionActiveColor == 'w') {
+                if (whitePieces[i][j] !== null) {
+                    square.addEventListener('click', (evt) => {
+                        processInput(evt);
+                    });
+                }
+            } elsif (positionActiveColor == 'b') {
+                if (blackPieces[i][j] !== null) {
+                    square.addEventListener('click', (evt) => {
+                        processInput(evt);
+                    });
+                }
+            }
         })
     })
 }

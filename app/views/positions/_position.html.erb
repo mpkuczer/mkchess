@@ -1,5 +1,8 @@
 <div class="board-wrapper">
-    <%= content_tag :div, id: 'position_data', data: { id: position.id, position: position.board, move: position.previous_move } do %>
+    <%= content_tag :div, id: 'position_data', data: { id: position.id,
+                                                       position: position.board,
+                                                       move: position.previous_move,
+                                                       active-color: position.get_active_color } do %>
     <% end %>
     <%= button_to skip_to_position_path(position_id: position.id,
                                         option: :previous,

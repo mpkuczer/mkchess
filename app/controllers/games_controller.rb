@@ -26,40 +26,42 @@ class GamesController < ApplicationController
     @position = Position.find(params[:position_id].to_i)
     @game = @position.game
     @move = [ params[:i1].to_i, params[:j1].to_i, params[:i2].to_i, params[:j2].to_i ]
-    if @position == @game.positions.order(:order).last
-      if @position.validate_move(*@move)
-        fen = @position.to_fen(*@move)
-        @game.positions.build(fen: fen,
-                              order: @position.order + 1,
-                              previous_move: @move.join).save
-        @new_position = @game.positions.order(:order).last
 
-        if @new_position.checkmate
-          @game.status = :finished
-          respond_to do |format|
-            format.js { render 'games/game_over', layout: false,
-                                                  locals: { position: @new_position,
-                                                            winner: @position.get_active_color.to_s },
-                                                  status: :ok }
-          end
-        elsif @new_position.stalemate
-          @game.status = :finished
-          respond_to do |format|
-            format.js { render 'games/game_over', layout: false,
-                                                  locals: { position: @new_position,
-                                                            winner: "draw" },
-                                                  status: :ok }
-          end
-        else
-          respond_to do |format|
-            format.js { render 'games/new', layout: false, locals: { position: @new_position }, status: :ok }
-          end
-        end
-      else
-        render json: { error: "Invalid move", offendingPiece: @move[0..1] }
+    unless @position == @game.positions.order(:order).last
+      render json: { error: "Past position" }
+      return
+    end
+    unless @position.validate_move(*@move)
+      render json: { error: "Invalid move", offendingPiece: @move[0..1] }
+      return
+    end
+
+    fen = @position.to_fen(*@move)
+    @game.positions.build(fen: fen,
+                          order: @position.order + 1,
+                          previous_move: @move.join).save
+    @new_position = @game.positions.order(:order).last
+
+    if @new_position.checkmate
+      @game.status = :finished
+      respond_to do |format|
+        format.js { render 'games/game_over', layout: false,
+                                              locals: { position: @new_position,
+                                                        winner: @position.get_active_color.to_s },
+                                              status: :ok }
+      end
+    elsif @new_position.stalemate
+      @game.status = :finished
+      respond_to do |format|
+        format.js { render 'games/game_over', layout: false,
+                                              locals: { position: @new_position,
+                                                        winner: "draw" },
+                                              status: :ok }
       end
     else
-      render json: { error: "Past position" }
+      respond_to do |format|
+        format.js { render 'games/new', layout: false, locals: { position: @new_position }, status: :ok }
+      end
     end
   end
 
