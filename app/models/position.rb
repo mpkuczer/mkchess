@@ -180,11 +180,15 @@ class Position < ApplicationRecord
 
       if (available(i, j+1, template) &&
           available(i, j+2, template) &&
+          get_square(i, 8, template)&.upcase == 'R' &&
+          color(i, 8, template) == color(i, j, template) &&
          (template[:get_castling_rights].to_s.include? color(i, j, template) == :w ? 'K' : 'k')) then
         squares.push([i, j+2])
       end
       if (available(i, j-1, template) &&
           available(i, j-2, template) &&
+          get_square(i, 1)&.upcase == 'R' &&
+          color(i, 1) == color(i, j) &&
          (template[:get_castling_rights].to_s.include? color(i, j, template) == :w ? 'Q' : 'q')) then
         squares.push([i, j-2])
       end
@@ -464,13 +468,13 @@ class Position < ApplicationRecord
     # Doesn't work!!
     w = 0
     b = 0
-    get_pieces_by_color(:b).each do |piece|
-      if capturable_squares(*piece, template).include? [i, j]
+    get_pieces_by_color(:b, template).each do |piece|
+      if (available_squares(*piece, template) + capturable_squares(*piece, template)).include? [i, j]
         b += 1
       end
     end
-    get_pieces_by_color(:w).each do |piece|
-      if capturable_squares(*piece, template).include? [i, j]
+    get_pieces_by_color(:w, template).each do |piece|
+      if (available_squares(*piece, template) + capturable_squares(*piece, template)).include? [i, j]
         w += 1
       end
     end
