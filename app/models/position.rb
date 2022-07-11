@@ -456,27 +456,39 @@ class Position < ApplicationRecord
     squares
   end
 
-  def piece_attacked(i, j, template=state)
-    piece = get_square(i, j, template)
-    if piece
-      attacked = color(i, j, template)
-      get_pieces_by_color(switch_color(attacked)).each do |piece|
-        if capturable_squares(*piece, template).include? [i, j]
-          return true
-        end
+  def square_attacked(i, j, template=state)
+    # Return a hash like this one:
+    # {b: 5, w: 3}
+    # which reads: attacked 5 times by black, 3 times by white
+
+    # Doesn't work!!
+    w = 0
+    b = 0
+    get_pieces_by_color(:b).each do |piece|
+      if capturable_squares(*piece, template).include? [i, j]
+        b += 1
       end
     end
-    false
+    get_pieces_by_color(:w).each do |piece|
+      if capturable_squares(*piece, template).include? [i, j]
+        w += 1
+      end
+    end
+    { b: b, w: w }
   end
 
   def active_color_in_check(template=state)
-    king = get_king_by_color(template[:get_active_color], template)
-    piece_attacked(*king, template)
+    active = template[:get_active_color]
+    inactive = switch_color(template[:get_active_color])
+    king = get_king_by_color(active, template)
+    square_attacked(*king, template)[inactive] > 0
   end
 
   def inactive_color_not_in_check(template=state)
-    king = get_king_by_color(switch_color(template[:get_active_color]), template)
-    !piece_attacked(*king, template)
+    active = template[:get_active_color]
+    inactive = switch_color(template[:get_active_color])
+    king = get_king_by_color(inactive, template)
+    square_attacked(*king, template)[active] == 0
   end
 
   def legal_squares(i, j, template=state)
