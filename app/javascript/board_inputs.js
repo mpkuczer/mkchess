@@ -6,36 +6,12 @@ window.boardInputs = () => {
             return str == str.toLowerCase() && str != str.toUpperCase();
         }
     }
-    const getSquareCoordinates = (square) => {
-        const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
-        const j = Array.from(square.parentNode.children).indexOf(square) + 1
-        return [i, j]
-    } 
-    // const addHoverToElement = () => {
-    //     this.classList.add('hover')
-    // }
-    const addHoverToElement = function () {
-        this.classList.add('hover')
-    }
-    const removeHoverFromElement = function () {
-        this.classList.remove('hover')
-    }
-    // const removeHoverFromElement = () => {
-    //     this.classList.remove('hover')
-    // }
-
     const board = document.querySelector('.board');
 
     const positionData = document.querySelector('#position_data').getAttribute('data-position');
     const positionId = document.querySelector('#position_data').getAttribute('data-id');
     const positionActiveColor = document.querySelector('#position_data').getAttribute('data-active-color');
     const position = JSON.parse(positionData);
-
-    const getSquare = (i, j) => {
-        // Accept coordinates in range between 0 and 7
-        return board.children[i].children[j]
-    }
-
     const whitePieces = position.map(rank => 
         rank.map((symbol) => 
             isLowerCase(symbol) ? null : symbol
@@ -46,6 +22,39 @@ window.boardInputs = () => {
             isLowerCase(symbol) ? symbol : null
         )
     )
+    const getSquareCoordinates = (square) => {
+        const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
+        const j = Array.from(square.parentNode.children).indexOf(square) + 1
+        return [i, j]
+    } 
+
+    const addHoverToElement = function () {
+        this.classList.add('hover')
+    }
+
+    const removeHoverFromElement = function () {
+        this.classList.remove('hover')
+    }
+
+    const getSquare = (i, j) => {
+        // Accept coordinates in range between 0 and 7
+        return board.children[i].children[j]
+    }
+
+    const cleanUp = function () {
+        queue[0] = null
+        queue[1] = null
+        if (document.getElementById("selected")) {
+            document.getElementById("selected").removeAttribute("id")
+        }
+        Array.from(board.children).forEach((row, i) => {
+            Array.from(row.children).forEach((square, j) => {
+                square.classList.remove('legal-move')
+                square.removeEventListener('mouseover', addHoverToElement)
+                square.removeEventListener('mouseout', removeHoverFromElement)
+            })
+        })
+    }
 
     let queue = [null, null];
 
@@ -85,18 +94,7 @@ window.boardInputs = () => {
 
         } else if (queue[0][0] == coords[0] &&
                    queue[0][1] == coords[1]) {
-            queue[0] = null
-            queue[1] = null
-            if (document.getElementById("selected")) {
-                document.getElementById("selected").removeAttribute("id")
-            }
-            Array.from(board.children).forEach((row, i) => {
-                Array.from(row.children).forEach((square, j) => {
-                    square.classList.remove('legal-move')
-                    square.removeEventListener('mouseover', addHoverToElement)
-                    square.removeEventListener('mouseout', removeHoverFromElement)
-                })
-            })
+            cleanUp();
             return
         } else {
             queue[1] = coords
@@ -115,18 +113,7 @@ window.boardInputs = () => {
                     position_id: positionId
                 },
             }).done((data, textStatus, jqXHR) => {
-                queue[0] = null;
-                queue[1] = null;
-                if (document.getElementById("selected")) {
-                    document.getElementById("selected").removeAttribute("id")
-                }
-                Array.from(board.children).forEach((row, i) => {
-                    Array.from(row.children).forEach((square, j) => {
-                        square.classList.remove('legal-move')
-                        square.removeEventListener('mouseover', addHoverToElement)
-                        square.removeEventListener('mouseout', removeHoverFromElement)
-                    })
-                })
+                cleanUp();
                 if (data.hasOwnProperty('offendingPiece')) {
                     let invalidCoords = data.offendingPiece
                     let invalidSquare = getSquare(invalidCoords[0] - 1, invalidCoords[1] - 1)
@@ -134,18 +121,7 @@ window.boardInputs = () => {
                     setTimeout(() => { invalidSquare.removeAttribute("id") }, 500)
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
-                queue[0] = null;
-                queue[1] = null;
-                if (document.getElementById("selected")) {
-                    document.getElementById("selected").removeAttribute("id")
-                }
-                Array.from(board.children).forEach((row, i) => {
-                    Array.from(row.children).forEach((square, j) => {
-                        square.classList.remove('legal-move')
-                        square.removeEventListener('mouseover', addHoverToElement)
-                        square.removeEventListener('mouseout', removeHoverFromElement)
-                    })
-                })
+                cleanUp();
             })} 
         }
 
