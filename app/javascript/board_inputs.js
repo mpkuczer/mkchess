@@ -11,6 +11,18 @@ window.boardInputs = () => {
         const j = Array.from(square.parentNode.children).indexOf(square) + 1
         return [i, j]
     } 
+    // const addHoverToElement = () => {
+    //     this.classList.add('hover')
+    // }
+    const addHoverToElement = function () {
+        this.classList.add('hover')
+    }
+    const removeHoverFromElement = function () {
+        this.classList.remove('hover')
+    }
+    // const removeHoverFromElement = () => {
+    //     this.classList.remove('hover')
+    // }
 
     const board = document.querySelector('.board');
 
@@ -64,12 +76,8 @@ window.boardInputs = () => {
                     [i, j] = square_coords
                     let square = getSquare(i-1, j-1)
                     square.classList.add('legal-move')
-                    square.addEventListener('mouseover', () => {
-                        square.classList.add('hover')
-                    })
-                    square.addEventListener('mouseout', () => {
-                        square.classList.remove('hover')
-                    })
+                    square.addEventListener('mouseover', addHoverToElement)
+                    square.addEventListener('mouseout', removeHoverFromElement)
                 })
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log(jqXHR)
@@ -85,6 +93,8 @@ window.boardInputs = () => {
             Array.from(board.children).forEach((row, i) => {
                 Array.from(row.children).forEach((square, j) => {
                     square.classList.remove('legal-move')
+                    square.removeEventListener('mouseover', addHoverToElement)
+                    square.removeEventListener('mouseout', removeHoverFromElement)
                 })
             })
             return
@@ -113,6 +123,8 @@ window.boardInputs = () => {
                 Array.from(board.children).forEach((row, i) => {
                     Array.from(row.children).forEach((square, j) => {
                         square.classList.remove('legal-move')
+                        square.removeEventListener('mouseover', addHoverToElement)
+                        square.removeEventListener('mouseout', removeHoverFromElement)
                     })
                 })
                 if (data.hasOwnProperty('offendingPiece')) {
@@ -130,6 +142,8 @@ window.boardInputs = () => {
                 Array.from(board.children).forEach((row, i) => {
                     Array.from(row.children).forEach((square, j) => {
                         square.classList.remove('legal-move')
+                        square.removeEventListener('mouseover', addHoverToElement)
+                        square.removeEventListener('mouseout', removeHoverFromElement)
                     })
                 })
             })} 
