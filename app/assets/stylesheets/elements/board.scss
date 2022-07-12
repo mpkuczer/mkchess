@@ -39,7 +39,7 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    width: 35%;
+    width: 40%;
     @media (max-width: 1340px) {
         width: 50%;
     }
@@ -58,6 +58,7 @@
         &:last-of-type {
             counter-reset: div;
             .tile {
+                position: relative;
                 counter-increment: div;
                 &::before {
                     content: counter(div, lower-alpha);
@@ -89,6 +90,7 @@
             background-size: cover;
             position: relative;
             transition: background-color 0.05s ease-out;
+            z-index: 1;
             &#selected {
                 background-color: var(--select-color);
             }
@@ -150,12 +152,67 @@
         &.successful {
             background-color: var(--success-light-color);
         }
+        &.hover {
+            background-color: var(--hover-light-color);
+        }
+        &.legal-move.blank {
+            &::before {
+                content: '';
+                position: absolute;
+                width: 25%;
+                height: 25%;
+                left: 37.5%;
+                top: 37.5%;
+                border-radius: 50%;
+                background-color: var(--hover-light-color);
+            }
+        }
+        &.legal-move:not(blank) {
+            &::before {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                border-radius: 50%;
+                border: 4px solid var(--hover-light-color);
+            }
+        }
     }
     
     .rank:nth-of-type(odd) .tile:nth-of-type(even), .rank:nth-of-type(even) .tile:nth-of-type(odd) {
         background-color: var(--dark-color);
         &.successful {
             background-color: var(--success-dark-color);
+        }
+        &.hover {
+            background-color: var(--hover-dark-color);
+        }
+        &.legal-move.blank {
+            &::before {
+                content: '';
+                position: absolute;
+                width: 25%;
+                height: 25%;
+                left: 37.5%;
+                top: 37.5%;
+                border-radius: 50%;
+                background-color: var(--hover-dark-color);
+            }
+        }
+        &.legal-move:not(blank) {
+            &::before {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                border-radius: 50%;
+                border: 4px solid var(--hover-dark-color);
+
+            }
         }
     }
     &.reversed {

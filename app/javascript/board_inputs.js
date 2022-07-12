@@ -1,43 +1,80 @@
-function isLowerCase(str)
-{
-    return str == str.toLowerCase() && str != str.toUpperCase();
-}
-
 window.boardInputs = () => {
+    const isLowerCase = (str) => {
+        if (str === null) {
+            return false
+        } else {
+            return str == str.toLowerCase() && str != str.toUpperCase();
+        }
+    }
+    const getSquareCoordinates = (square) => {
+        const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
+        const j = Array.from(square.parentNode.children).indexOf(square) + 1
+        return [i, j]
+    } 
+
     const board = document.querySelector('.board');
+
     const positionData = document.querySelector('#position_data').getAttribute('data-position');
     const positionId = document.querySelector('#position_data').getAttribute('data-id');
     const positionActiveColor = document.querySelector('#position_data').getAttribute('data-active-color');
-
     const position = JSON.parse(positionData);
 
-    const whitePieces = position.map((symbol) => {
-        symbol.isLowerCase ? symbol : null
-    })
-    const blackPieces = position.map((symbol) => {
-        symbol.isLowerCase ? null : symbol
-    });
+    const getSquare = (i, j) => {
+        // Accept coordinates in range between 0 and 7
+        return board.children[i].children[j]
+    }
 
-
+    const whitePieces = position.map(rank => 
+        rank.map((symbol) => 
+            isLowerCase(symbol) ? null : symbol
+        )
+    )
+    const blackPieces = position.map(rank =>
+        rank.map((symbol) =>
+            isLowerCase(symbol) ? symbol : null
+        )
+    )
 
     let queue = [null, null];
 
     const processInput = (evt) => {
-        const getSquareCoordinates = (square) => {
-            const i = Array.from(square.parentNode.parentNode.children).indexOf(square.parentNode) + 1
-            const j = Array.from(square.parentNode.children).indexOf(square) + 1
-            return [i, j]
-        } 
-
         let coords = getSquareCoordinates(evt.target)
         if (queue[0] === null) {
-            if (evt.target.classList.contains("blank")) {
+            if ((position[coords[0] - 1][coords[1] - 1] === null) ||
+               (positionActiveColor == 'w' && whitePieces[coords[0] - 1][coords[1] - 1] === null) ||
+               (positionActiveColor == 'b' && blackPieces[coords[0] - 1][coords[1] - 1] === null)) {
                 queue[0] = null;
                 queue[1] = null;
                 return
-            } 
+            }
             queue[0] = coords
             evt.target.setAttribute("id", "selected")
+            $.ajax({
+                url: '/legal_squares',
+                type: 'PATCH',
+                beforeSend: (xhr) => {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+                data: {
+                    i: queue[0][0],
+                    j: queue[0][1],
+                    id: positionId
+                },
+            }).done((data, textStatus, jqXHR) => {
+                data.squares.forEach((square_coords) => {
+                    let i; let j;
+                    [i, j] = square_coords
+                    let square = getSquare(i-1, j-1)
+                    square.classList.add('legal-move')
+                    square.addEventListener('mouseover', () => {
+                        square.classList.add('hover')
+                    })
+                    square.addEventListener('mouseout', () => {
+                        square.classList.remove('hover')
+                    })
+                })
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log(jqXHR)
+            })
+
         } else if (queue[0][0] == coords[0] &&
                    queue[0][1] == coords[1]) {
             queue[0] = null
@@ -45,15 +82,21 @@ window.boardInputs = () => {
             if (document.getElementById("selected")) {
                 document.getElementById("selected").removeAttribute("id")
             }
+            Array.from(board.children).forEach((row, i) => {
+                Array.from(row.children).forEach((square, j) => {
+                    square.classList.remove('legal-move')
+                })
+            })
             return
         } else {
             queue[1] = coords
         }
+
         if (queue[0] !== null && queue[1] !== null) {
             $.ajax({
                 url: '/move',
                 type: 'PATCH',
-                beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+                beforeSend: (xhr) => {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
                 data: {
                     i1: queue[0][0],
                     j1: queue[0][1],
@@ -67,11 +110,16 @@ window.boardInputs = () => {
                 if (document.getElementById("selected")) {
                     document.getElementById("selected").removeAttribute("id")
                 }
+                Array.from(board.children).forEach((row, i) => {
+                    Array.from(row.children).forEach((square, j) => {
+                        square.classList.remove('legal-move')
+                    })
+                })
                 if (data.hasOwnProperty('offendingPiece')) {
                     let invalidCoords = data.offendingPiece
-                    let invalidTile = board.children[invalidCoords[0] - 1].children[invalidCoords[1] - 1]
-                    invalidTile.setAttribute("id", "invalid")
-                    setTimeout(() => { invalidTile.removeAttribute("id") }, 500)
+                    let invalidSquare = getSquare(invalidCoords[0] - 1, invalidCoords[1] - 1)
+                    invalidSquare.setAttribute("id", "invalid")
+                    setTimeout(() => { invalidSquare.removeAttribute("id") }, 500)
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 queue[0] = null;
@@ -79,24 +127,19 @@ window.boardInputs = () => {
                 if (document.getElementById("selected")) {
                     document.getElementById("selected").removeAttribute("id")
                 }
+                Array.from(board.children).forEach((row, i) => {
+                    Array.from(row.children).forEach((square, j) => {
+                        square.classList.remove('legal-move')
+                    })
+                })
             })} 
         }
 
     Array.from(board.children).forEach((row, i) => {
         Array.from(row.children).forEach((square, j) => {
-            if (positionActiveColor == 'w') {
-                if (whitePieces[i][j] !== null) {
-                    square.addEventListener('click', (evt) => {
-                        processInput(evt);
-                    });
-                }
-            } elsif (positionActiveColor == 'b') {
-                if (blackPieces[i][j] !== null) {
-                    square.addEventListener('click', (evt) => {
-                        processInput(evt);
-                    });
-                }
-            }
+            square.addEventListener('click', (evt) => {
+                processInput(evt);
+            });
         })
     })
 }
