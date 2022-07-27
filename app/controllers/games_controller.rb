@@ -78,9 +78,9 @@ class GamesController < ApplicationController
     when :current
       @new_position = @game.positions.order(:order).last
     end
-      respond_to do |format|
-        format.js { render 'games/new', layout: false, locals: { position: @new_position } }
-      end
+    respond_to do |format|
+      format.js { render 'games/new', layout: false, locals: { position: @new_position } }
+    end
   end
 
   private
