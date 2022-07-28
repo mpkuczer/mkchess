@@ -50,6 +50,7 @@ window.boardInputs = () => {
         Array.from(board.children).forEach((row, i) => {
             Array.from(row.children).forEach((square, j) => {
                 square.classList.remove('legal-move')
+                square.classList.remove('hover')
                 square.removeEventListener('mouseover', addHoverToElement)
                 square.removeEventListener('mouseout', removeHoverFromElement)
             })

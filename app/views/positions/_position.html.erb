@@ -4,32 +4,23 @@
                                                        move: position.previous_move,
                                                        active_color: position.get_active_color } do %>
     <% end %>
-    <%= button_to skip_to_position_path(position_id: position.id,
-                                        option: :previous,
-                                        format: :js),
-                                      { form_class: "d-flex",
-                                        class: "nav-btn previous" },
-                                        remote: true do %>
-        <i class="bi bi-skip-start-fill"></i>
-    <% end %>
+    <div class="d-flex align-items-center">
+      <i class="nav-btn bi bi-skip-backward-fill" id="nav-start"></i>
+      <i class="nav-btn bi bi-skip-start-fill" id="nav-previous"></i>
+    </div>
 
     <%= render "positions/board" %>
 
-    <%= button_to skip_to_position_path(position_id: position.id,
-                                        option: :next,
-                                        format: :js),
-                                      { form_class: "d-flex",
-                                        class: "nav-btn next" },
-                                        remote: true do %>
-        <i class="bi bi-skip-end-fill"></i>
-    <% end %>
+    <div class="d-flex align-items-center">
+      <i class="nav-btn bi bi-skip-end-fill" id="nav-next"></i>
+      <i class="nav-btn bi bi-skip-forward-fill" id="nav-current"></i>
+    </div>
+
 
     <%= javascript_include_tag 'populate_board' %>
     <%= javascript_include_tag 'board_inputs' %>
+    <%= javascript_include_tag 'skip_position' %>
     <script>populateBoard();</script>
     <script>boardInputs();</script>
-
-    <%# <i class="bi bi-skip-forward-fill"></i>
-    <i class="bi bi-skip-end-fill"></i>
-    <i class="bi bi-skip-backward-fill"></i> %>
+    <script>skipPosition();</script>
 </div>
