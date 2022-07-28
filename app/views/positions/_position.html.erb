@@ -4,17 +4,24 @@
                                                        move: position.previous_move,
                                                        active_color: position.get_active_color } do %>
     <% end %>
-    <div class="d-flex align-items-center">
+    <nav class="nav-panel-left">
       <i class="nav-btn bi bi-skip-backward-fill" id="nav-start"></i>
       <i class="nav-btn bi bi-skip-start-fill" id="nav-previous"></i>
-    </div>
+    </nav>
 
     <%= render "positions/board" %>
 
-    <div class="d-flex align-items-center">
+    <nav class="nav-panel-right">
       <i class="nav-btn bi bi-skip-end-fill" id="nav-next"></i>
       <i class="nav-btn bi bi-skip-forward-fill" id="nav-current"></i>
-    </div>
+    </nav>
+
+    <nav class="nav-panel-bottom">
+      <i class="nav-btn bi bi-skip-backward-fill" id="nav-start"></i>
+      <i class="nav-btn bi bi-skip-start-fill" id="nav-previous"></i>
+      <i class="nav-btn bi bi-skip-end-fill" id="nav-next"></i>
+      <i class="nav-btn bi bi-skip-forward-fill" id="nav-current"></i>
+    </nav>
 
 
     <%= javascript_include_tag 'populate_board' %>

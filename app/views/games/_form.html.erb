@@ -1,4 +1,4 @@
-<%= simple_form_for @game, html: { class: "row justify-content-center" } do |f| %>
+<%= simple_form_for @game, html: { class: "row justify-content-center mt-5" } do |f| %>
   <%= f.error_notification %>
   <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
   <%= f.hidden_field :white_type, value: 'User' %>

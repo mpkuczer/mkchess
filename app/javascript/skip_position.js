@@ -11,7 +11,7 @@ window.skipPosition = () => {
     const skipPosition = (evt) => {
         evt.preventDefault();
         $.ajax({
-            url: '/skip_to_position',
+            url: '/skip_position',
             type: 'PATCH',
             beforeSend: (xhr) => {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
             data: {

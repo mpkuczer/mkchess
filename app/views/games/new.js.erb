@@ -1,6 +1,7 @@
 document.querySelector('.board-wrapper').outerHTML = "<%= j render(partial: 'positions/position', locals: { position: position }) %>";
 populateBoard();
 skipPosition();
+
 <% if position.active %>
 boardInputs();
 <% else %>

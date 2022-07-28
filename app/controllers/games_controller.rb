@@ -1,6 +1,6 @@
 class GamesController < ApplicationController
   # before_action :authenticate_user!, except: [:index, :show, :new, :create]
-  protect_from_forgery except: :skip_to_position
+  protect_from_forgery except: :skip_position
 
   def show
     @game = Game.find(params[:id])
@@ -65,7 +65,7 @@ class GamesController < ApplicationController
     end
   end
 
-  def skip_to_position
+  def skip_position
     @position = Position.find(params[:position_id].to_i)
     @game = @position.game
     case params[:option].to_sym
