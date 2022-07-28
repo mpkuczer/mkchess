@@ -4,6 +4,7 @@ import './populate_board'
 import './board_inputs'
 import './game_over'
 import './skip_position'
+import './change_board_color'
 import "@hotwired/turbo-rails"
 import "./controllers"
 import * as bootstrap from "bootstrap"

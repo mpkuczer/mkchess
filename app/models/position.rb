@@ -4,6 +4,10 @@ class Position < ApplicationRecord
   validate :well_formed_fen
   validate :correct_board_size
 
+  def active
+    self == game.positions.last
+  end
+
   LETTERS = 'abcdefgh'
 
   # Retrieval of data from FEN

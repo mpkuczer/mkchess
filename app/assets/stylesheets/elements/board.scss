@@ -32,11 +32,7 @@
 }
 
 .board {
-    // display: grid;
-    // grid-template-columns: repeat(8, 1fr);
-    // gap: 0%;
     margin: 1rem;
-
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -213,6 +209,20 @@
                 border-radius: 50%;
                 border: 4px solid var(--hover-dark-color);
 
+            }
+        }
+    }
+    &.inactive {
+        .rank:nth-of-type(odd) .tile:nth-of-type(odd), .rank:nth-of-type(even) .tile:nth-of-type(even) {
+            background-color: var(--inactive-light-color);
+            &.successful {
+                background-color: var(--inactive-success-light-color)
+            }
+        }
+        .rank:nth-of-type(odd) .tile:nth-of-type(even), .rank:nth-of-type(even) .tile:nth-of-type(odd) {
+            background-color: var(--inactive-dark-color);
+            &.successful {
+                background-color: var(--inactive-success-dark-color)
             }
         }
     }
