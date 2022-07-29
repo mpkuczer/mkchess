@@ -6,13 +6,8 @@
 - Postgres 12.11
 
 * Configuration:
-- `bundle install` to install gems
-- `rake db:setup` to create, migrate and seed the database. 
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
+- `bundle install` to install gems,
+- `rake db:setup` to create, migrate and seed the database,
+- `./bin/dev` to start the server
 
 * ...
